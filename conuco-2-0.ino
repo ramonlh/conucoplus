@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2000    // 
+#define versinst 2001    // 
 #define debug true
 #define debugwifi false
 
@@ -32,13 +32,13 @@ extern "C" {
 #include "DallasTemperature.h"        // Local
 #include "DHTesp.h"                   // Local
 #include "defines.h"                  // include
-#include "variables.h"                // include
 #include "Base64.h"                   // include
 #include "RCSwitch.h"                 // Local
 #include "LiquidCrystal_I2C.h"        // Local
 #include <FS.h>
 #include <ESP8266FtpServer.h>
 #include <PubSubClient.h>
+#include "variables.h"                // include
 
 ADC_MODE(ADC_TOUT);
 ESP8266WebServer server(88);
@@ -58,7 +58,7 @@ PubSubClient PSclient(espClient);
 IoTtweet myiot;       
 
 #include "basicfunctions.h"            // include
-#include "ajaxcode.h"                  // include
+//#include "ajaxcode.h"                  // include
 #include "htmlFunctions.h"             // include
 #include "conuco8266.h"               // include
 #include "jsonfunctions.h"             // include
@@ -91,7 +91,7 @@ void initPines()
   for (byte i=0; i<maxdevrem; i++) { actirem[i]=true; actisenal[i]=true; }
 }
 
-void initSerial() {   Serial.begin (115200);  delay(10); }
+void initSerial() { Serial.begin (115200);  delay(10); }
 void initEEPROM() { EEPROM.begin(ROMsize); }
 void initSPIFFS()
 {
@@ -171,7 +171,6 @@ void initWiFi()
 
 void initwebserver()
 {
-  //here the list of headers to be recorded
   const char * headerkeys[]={"User-Agent","Cookie"};
   size_t headerkeyssize=sizeof(headerkeys)/sizeof(char*);
   server.collectHeaders(headerkeys, headerkeyssize);
@@ -221,12 +220,6 @@ void initIFTTT()
     if (conf.mododweet==1) postdweet(mac);
     if (conf.iottweetenable==1) postIoTweet();
   }
-}
-
-void initMqtt()
-{
-  PSclient.setServer(conf.mqttserver, 1883);
-  PSclient.setCallback(mqttcallback);
 }
 
 void init433()
@@ -280,7 +273,7 @@ void checkRemotes()
         }
       else
         Serial.println(c(terror));
-      msg=vacio;
+      clearmsg();
       }
 }
 
@@ -410,18 +403,10 @@ void taskvar()
     if (conf.iottweetenable == 1) { postIoTweet(); }
 //      actualizamasters();
     actualizaremotos();
-    for (byte i=0;i<3;i++) mqttpublish(i);
-    if (conf.mqttenable) 
-      {  
-      if (!PSclient.connected()) { if (mqttreconnect()) { mqttsubscribevalues();  } }
-      if (PSclient.beginPublish("conuco/grande", 1000, false))
-        {
-        Serial.println("beginPublish");
-        for (int i=0;i<1000;i++) PSclient.write(48);
-        PSclient.endPublish();
-        }
-      Serial.print("Result Publish:"); Serial.println(PSclient.endPublish());
-      }
+    if (conf.mqttenable)
+    if (!PSclient.connected()) { if (mqttreconnect()) { mqttsubscribevalues();  } }
+    mqttpublishallvalues();
+//    for (byte i=0;i<3;i++) if (getbit8(conf.mqttsalenable,i)==1) mqttpublish(i);
     }
   //    if ((millis()-tini)>5000) {printhora(); Serial.print(F(" 10 SEG:")); Serial.println(millis()-tini);}
   mact10 = millis();

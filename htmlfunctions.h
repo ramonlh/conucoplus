@@ -175,14 +175,15 @@ void ICACHE_FLASH_ATTR writeHeader(boolean refreshmode, boolean ajaxmode)
 {
   printP(menor, thtml);
   printP(b, c(xmlns), mayor);
-  printP(menor, thead, mayor, menor, c(title), mayor);
+  printP(menor, thead, mayor, menor, c(ttitle), mayor);
   printP(c(conuco));
   printP(c(web));
   printP(c(tserver), menor, barra);
-  printP(c(title));
-  printP(mayor,htmlHead_3);
+  printP(c(ttitle));
+  printP(mayor);
+  printPfile(filehtmlhead);
   if (ajaxmode)
-    printP(ajaxscript);
+    printPfile(fileajaxscript);
   else
     if (refreshmode)
       if (conf.peractpan>0) printPiP(c(htmlRefresh_i), conf.peractpan, comillascierre);
@@ -308,7 +309,7 @@ void ICACHE_FLASH_ATTR writeFooter(PGM_P texto, boolean cerrar)
 
 void ICACHE_FLASH_ATTR setCookie(byte valor)
 {
-  msg=vacio;
+  clearmsg();
   printP(c(HTTP11), b);
   printP(c(t301), b, ok, crlf);
   printP(c(setcookie),dp, b);
@@ -316,21 +317,23 @@ void ICACHE_FLASH_ATTR setCookie(byte valor)
   printP(crlf,c(location), dp, b, barra, crlf);
   printP(c(cachecontrol),dp, b);
   printP(c(nocache), crlf, crlf);
-  server.sendContent(msg);
-  msg=vacio;
+//  server.sendContent(msg);
+  serversendcontent();
+  clearmsg();
 }
 
 void ICACHE_FLASH_ATTR sendOther(const char *otherURL, int param)
 {
-  msg=vacio;
+  clearmsg();
   printP(c(HTTP11),b);
   printP(c(t303),b);
   printP(c(seeother),crlf);
   printP(c(location),dp,b,otherURL);
   if (param>=0) { printP(paramn);printI(param);}
   printP(crlf,crlf);
-  server.sendContent(msg);
-  msg=vacio;
+//  server.sendContent(msg);
+  serversendcontent();
+  clearmsg();
 }
 
 void ICACHE_FLASH_ATTR printDiaSem(byte i)

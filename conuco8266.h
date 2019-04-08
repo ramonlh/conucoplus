@@ -13,7 +13,8 @@ void ICACHE_FLASH_ATTR filesHTML()
 {
   printremote();
   if (!autOK()) { sendOther(loghtm,-1); return; }
-  msg=vacio;
+  clearmsg();
+  
   writeHeader(false,false);
   if (filesok)
     writeMenu(4, 3);
@@ -24,12 +25,12 @@ void ICACHE_FLASH_ATTR filesHTML()
   printP(c(tclass), ig, tnormal, mayor);
   Dir dir = SPIFFS.openDir("/");
   while (dir.next())   {
-    File f=dir.openFile("r");
+    File f=dir.openFile(letrar);
     printP(tr, td, href_i, comillas, letrad, letraw);
     printP(interr, letraf, ig);
-    msg=msg+dir.fileName();
+    printS(dir.fileName());
     printP(comillas, mayor);
-    msg=msg+dir.fileName();
+    printS(dir.fileName());
     printP(href_f, td_f, td);
     printI(f.size());
     printP(td_f, tr_f);
@@ -45,7 +46,7 @@ void ICACHE_FLASH_ATTR espsysHTML()
   printremote();
   if (!autOK()) { sendOther(loghtm,-1); return; }
 
-  msg=vacio;
+  clearmsg();
   writeHeader(false,false);
   writeMenu(4, 4);
   printP(menor,table, b);

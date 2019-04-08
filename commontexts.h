@@ -1,27 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////  COMUNES   //////////////////////////////////////////////////////////
-    
-PGM_P(htmlHead_3)=  
-    "<meta name=\"viewport\" content=\"width=device-width initial-scale=1\"/>"
-//    "<meta http-equiv=\"Content-Type\" content=\"text/html charset=utf-8\"/>"
-    "<meta http-equiv=\"Content-Type\" content=\"text/html charset=ISO-8859-1\"/>"
-    
-    "<style type=\"text/css\"> a:link { text-decoration:none; }"    // quita subrayado de enlaces
-    
-    "table.m {font-family:Verdana;font-size:11pt;border-collapse:collapse;}"     
-    "table.m th {border-width:2px;padding:8px;border-style:solid;border-color:#666666;background-color:#FDFF9A;}"
-    "table.m td {border-width:2px;padding:8px;border-style:solid;border-color:#666666;background-color:#dedede;}"
-
-    // usado en tablas de panel principal
-    "table.p {font-family:Verdana;font-size:9pt;border-collapse:collapse;color:#FFFFFF;text-align:left;}"      
-    "table.p th {border-color:#666666;border-width:2px;padding:8px;border-style:solid;background-color:#FFFF00;}"
-    "table.p td {border-color:#666666;border-width:2px;padding:8px; border-style:solid;font-color:#000000;background-color:#515772;}"
-
-    // usado en tablas de configuración, programación etc NO CENTRADO
-    "table.n {font-family:Verdana;font-size:9pt;border-collapse:collapse;text-align:left;}"      
-    "table.n th {border-style:solid;border-color:#666666;border-width:2px;padding:4px;background-color:#FFFF00;}"
-    "table.n td {border-style:solid;border-color:#666666;border-width:2px;padding:4px;background-color:#DEDEDE;}"
-    "</style>";
 
 // textos html NO MODIFICAR
 
@@ -152,6 +130,8 @@ PGM_P(paren_i)="(";
 PGM_P(paren_f)=")";
 PGM_P(llave_i)="{";
 PGM_P(llave_f)="}";
+PGM_P(corchete_i)="[";
+PGM_P(corchete_f)="]";
 PGM_P(punto)=".";
 PGM_P(puntoycoma)=";";
 PGM_P(guion)="-";
@@ -165,11 +145,14 @@ PGM_P(vacio)="";
 PGM_P(amas)="a+";
 PGM_P(rmas)="r+";
 PGM_P(wmas)="w+";
+PGM_P(grados)="ºC";
 PGM_P(celsius)="&#8451;";
 PGM_P(symsum)="&#8721;";
 PGM_P(symhoz)="&#9773;";
 PGM_P(symyes)="&#10004;";
 PGM_P(symnot)="&#10006;";
+PGM_P(tset)="/set";
+PGM_P(tstate)="/state";
 
 //////  No convertibles
 PGM_P(applicationjson)="application/json; charset=utf-8";
@@ -216,6 +199,7 @@ PGM_P(ups)="PgUp";
 PGM_P(downs)="PgDn";
 PGM_P(lefts)="LF";
 PGM_P(rigths)="RT";
+PGM_P(apppublish)="app.publish";
 
 ///////////////////////////////
 
@@ -223,10 +207,6 @@ PGM_P(rigths)="RT";
 PGM_P(aa)="aa";
 PGM_P(DV)="DV";
 PGM_P(ua0)="ua0";
-//PGM_P(el0)="e0";
-//PGM_P(el1)="e1";
-//PGM_P(sl0)="s0";
-//PGM_P(sl1)="s1";
 PGM_P(tel0)="te0";
 PGM_P(tel1)="te1";
 PGM_P(tsl0)="ts0";

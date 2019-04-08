@@ -1,3 +1,5 @@
+
+
 #define ROMsize 4096
 #define maxerrorrem 5
 #define SLAVE 0
@@ -375,8 +377,8 @@
 #define web 232
 #define tid 233
 #define tdcolspan_i 234
-#define resetcontp 235 
-#define title 236
+#define resetcontp 235
+#define ttitle 236
 //#define toff 237
 //#define tvalue 238
 #define actwc 239
@@ -400,4 +402,46 @@
 #define Firmware 256
 #define MAC 258
 #define BMP085OK 259
+#define dashmainTextSize 260
+#define dashpostfix 261
+#define dashprefix 262
+#define dashtextcolor 263
+#define dashenableIntermediateState 264
+#define dashenablePub 265
+#define dashenteredIntermediateStateAt 266
+#define dashintermediateStateTimeout 267
+#define dashjsOnReceive 268
+#define dashjsonPath 269
+#define dashlastPayload 270
+#define dashqos 271
+#define dashretained 272
+#define dashtopic 273
+#define dashtopicPub 274
+#define dashupdateLastPayloadOnPub 275
+#define dashid 276
+#define dashjsBlinkExpression 277
+#define dashjsOnDisplay 278
+#define dashjsOnTap 279
+#define dashlastActivity 280
+#define dashlongId 281
+#define dashname 282
+#define dashtype 283
+#define tcelsius 284
+#define medium 285
+#define ttrue 286
+#define tfalse 287
+#define ic_radio_button_unchecked 288
+#define ic_radio_button_checked 289
+#define dashoffcolor 290 
+#define dashoncolor 291 
+#define dashpayloadoff 292 
+#define dashpayloadon 293 
+#define ic_settings_poweroff 294 
+#define ic_settings_poweron 295 
+#define eventdatalast01 296
+#define apppublish 297
+#define ifeventdata 298
+#define evendatalast 299
+#define dashiconoff 300
+#define dashiconon 301
 

@@ -1,3 +1,4 @@
+
 #include <EEPROM.h>
 #include <Arduino.h>  // for type definitions
 
@@ -15,6 +16,14 @@ template <class T> int EEPROM_readAnything(int ee, T& value)
     unsigned int i;
     for (i=0; i<sizeof(value); i++) *p++=EEPROM.read(ee++);
     return i;
+}
+
+void clearmsg()
+{
+  msg=vacio;
+  fmsg=SPIFFS.open(filemsg,"w");
+  if (fmsg) fmsg.close();
+  fmsg=SPIFFS.open(filemsg,"a+");
 }
 
 boolean strcharcomp() { msg.toLowerCase(); msg.toCharArray(auxdesc, msg.length()+1); return (strcmp(auxchar,auxdesc)==0); }
@@ -95,7 +104,7 @@ void ICACHE_FLASH_ATTR addlog(File fileact)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 {
-  File auxfile=SPIFFS.open("/log.txt","a+");
+  File auxfile=SPIFFS.open(filelog,"a+");
   if (auxfile)  
     { 
     if (day()<10) auxfile.print(cero); auxfile.print(day()); auxfile.print(barra);
@@ -112,7 +121,6 @@ void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, PGM_P texto)
 {
-//  File auxfile=SPIFFS.open("/log.txt",amas);
   File auxfile=SPIFFS.open("/log.txt","a+");
   if (auxfile)  
     { 
@@ -207,7 +215,7 @@ int callhttpGET(char *host, int port, boolean readresp, unsigned long timeout)
   http.begin(host,port,msg);
   http.setTimeout(timeout);
   int httpCode=http.GET();
-  msg="";
+  clearmsg();
   if (readresp) if(httpCode==HTTP_CODE_OK) { msg=http.getString(); }
   http.end();
   return httpCode;
@@ -220,6 +228,8 @@ boolean checkfiles()
 {
   boolean auxB=true;
   auxB=auxB && checkfile(fileconf); 
+  auxB=auxB && checkfile(filehtmlhead); 
+  auxB=auxB && checkfile(fileajaxscript); 
   auxB=auxB && checkfile(filezonas);
   auxB=auxB && checkfile(filedevrem);
   auxB=auxB && checkfile(filesalrem); 
@@ -241,7 +251,30 @@ boolean checkfiles()
   return auxB;
 }
 
-void ICACHE_FLASH_ATTR printP(PGM_P texto1) { char c;  while ((c = pgm_read_byte(texto1++))) msg += c; }
+void ICACHE_FLASH_ATTR printP(PGM_P texto) 
+{ if (fmsg) { char c; while ((c = pgm_read_byte(texto++))) fmsg.print(c); } }
+
+void ICACHE_FLASH_ATTR printS(String texto) 
+{ if (fmsg) { fmsg.print(texto); } }
+
+void ICACHE_FLASH_ATTR printPc(char michar) 
+{ if (fmsg) fmsg.print(michar); }
+
+void printPfile(char * namefile)
+{
+  File f=SPIFFS.open(namefile,"r");
+  if (f)  
+    {
+    char auxb[1];
+    for (int i=0;i<f.size();i++) 
+      { 
+      f.readBytes(auxb,1);
+      printPc(auxb[0]);
+      }
+    f.close();
+    }
+}
+
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2) { printP(texto1); printP(texto2);}
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2, PGM_P texto3) { printP(texto1, texto2); printP(texto3);}
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2, PGM_P texto3, PGM_P texto4)
@@ -265,9 +298,7 @@ void ICACHE_FLASH_ATTR printIP(long valor, const  char *texto) { printI(valor); 
 void ICACHE_FLASH_ATTR printPiP(const char *texto1, int num, const char *texto2)
   { printP(texto1); printI(num); printP(texto2);}
 
-
-
-
+///////////////////////////////////////////////////////////////////////////////////////
 bool ICACHE_FLASH_ATTR autOK()
 {
   return true;      // provisional
@@ -381,7 +412,65 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(tr_f, menor, barra, table, mayor, br);
 }
 
-void ICACHE_FLASH_ATTR serversend200() { server.send(200, texthtml, msg); msg=vacio; }
+void serversendcontent()
+{
+  fmsg.close();   // cierra fichero que estaba en escritura
+  fmsg=SPIFFS.open(filemsg,"r");
+  if (fmsg)  
+    {
+    char auxb[1];
+    for (int i=0;i<fmsg.size();i++) 
+      { 
+      fmsg.readBytes(auxb,1);
+      server.sendContent(String(auxb[0]));
+      }
+    fmsg.close();
+    }
+}
+
+void ICACHE_FLASH_ATTR serversend200() 
+{ 
+  fmsg.close();   // cierra fichero que estaba en escritura
+  fmsg=SPIFFS.open(filemsg,"r");
+  int nsend=fmsg.size();
+  if (fmsg)  
+    {
+    server.setContentLength(nsend);
+    server.send(200,texthtml,vacio);  // no se envía nada
+    for (int i=0;i<nsend/bufsizechar;i++) 
+      { 
+      fmsg.readBytes(auxchar,bufsizechar); 
+      auxchar[bufsizechar]='\0';
+      server.sendContent(String(auxchar));
+      }
+    // resto 
+    fmsg.readBytes(auxchar,nsend%130);
+    auxchar[nsend%bufsizechar]='\0';
+    server.sendContent(String(auxchar));
+    fmsg.close();
+    }
+  clearmsg(); 
+}
+
+void ICACHE_FLASH_ATTR serversend404() 
+{ 
+  fmsg.close();   // cierra fichero que estaba en escritura
+  fmsg=SPIFFS.open(filemsg,"r");
+  if (fmsg)  
+    {
+    server.setContentLength(fmsg.size());
+    server.send(404,textplain,vacio);
+    char auxb[1];
+    for (int i=0;i<fmsg.size();i++) 
+      { 
+      fmsg.readBytes(auxb,1);
+      server.sendContent(String(auxb[0]));
+      }
+    fmsg.close();
+    }
+  clearmsg(); 
+}
+
 void ICACHE_FLASH_ATTR printtiempo(unsigned long segundos)
 {
   if (segundos < 60)  {

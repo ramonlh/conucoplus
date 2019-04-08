@@ -43,7 +43,6 @@ typedef struct {    // datos configuración
                 char passAP[20]="12341234";       // 20 bytes, Password en modo STA
                 byte pinremote[maxsalrem];        // 32 bytes, pin de cada salida remota
                 byte idsalremote[maxsalrem];      // 32 bytes, id de dispositivos de cada salida remota
-                
                 byte bPRGsem[maxPrg][1];          // 8 bytes, para guardar 8x4 bits de asociación PRG-PRGsem
                 byte prgsal[maxPrgSem];           // 8 bytes, salida a actuar en cada programación
                 byte prgdia[maxPrgSem][1];        // 8 bytes, días de la semana, bits 0 a 6
@@ -152,7 +151,8 @@ byte iftttenabletemp=0;
 char iftttkeytemp[30]="";
 char admin[]="admin";
 char buff[20];                  // 20 bytes, auxiliar
-char auxchar[130];              // 130 bytes, auxiliar 
+const int bufsizechar=130;
+char auxchar[bufsizechar];              // 130 bytes, auxiliar 
 char auxdesc[60];               // 60 bytes, auxiliar para lectura de descriptores de archivos
 char unitpinAtemp[4];           // 4 char, unidades entradas analógicas
 char iottweetusertemp[10];          //IoTtweet account user ID (6 digits, included zero pre-fix)
@@ -247,6 +247,9 @@ boolean bmp085enabled=false;
 conucodata datosremoto;
 
 boolean filesok=false;
+char filemsg[]="/msg.txt";
+char filehtmlhead[]="/head.txt";
+char fileajaxscript[]="/ajax.txt";
 char fileconf[]="/conf.txt";
 char filezonas[]="/zonas.txt";
 char filedevrem[]="/devrem.txt";
@@ -269,27 +272,6 @@ char filelog[]="/log.txt";
 char filedash[]="/dash.txt";
 
 unsigned long tini=0;
+String mqttclientID="";
+File fmsg;
 
-//////////////  BMP085
-//const unsigned char OSS=0;  // Oversampling Setting
-//// Calibration values
-//int ac1;
-//int ac2; 
-//int ac3; 
-//unsigned int ac4;
-//unsigned int ac5;
-//unsigned int ac6;
-//int b1; 
-//int b2;
-//int mb;
-//int mc;
-//int md;
-//// b5 is calculated in bmp085GetTemperature(...), this variable is also used in bmp085GetPressure(...)
-//// so ...Temperature(...) must be called before ...Pressure(...).
-//long b5; 
-//short temperature;
-//long pressure;
-//// Use these for altitude conversions
-//const float p0 = 101325;     // Pressure at sea level (Pa)
-//float altitude;
-////////////////////////////////////////
