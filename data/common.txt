@@ -257,8 +257,48 @@ URL
 Firmware                                
 MAC                                     
 BMP085 OK                               
-                                       .
-                                       .
+mainTextSize                            
+postfix                                 
+prefix                                  
+textcolor                               
+enableIntermediateState                 
+enablePub                               
+enteredIntermediateStateAt              
+intermediateStateTimeout                
+jsOnReceive                             
+jsonPath                                
+lastPayload                             
+qos                                     
+retained                                
+topic                                   
+topicPub                                
+updateLastPayloadOnPub                  
+id                                      
+jsBlinkExpression                       
+jsOnDisplay                             
+jsOnTap                                 
+lastActivity                            
+longId                                  
+name                                    
+type                                    
+ C                                      
+MEDIUM                                  
+true                                    
+false                                   
+ic_radio_button_unchecked               
+ic_radio_button_checked                 
+offColor                                
+onColor                                 
+payloadOff                              
+payloadOn                               
+ic_power_settings_new                   
+ic_power_switch                         
+event.data['last']=='0'?'1':'0',false,0)
+app.publish                             
+if (!event.data) {event.data={};}       
+event.data['last']=event.payload        
+iconOff                                 
+iconOn                                  
                                        .
                                        .
                                        .
