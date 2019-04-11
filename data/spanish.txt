@@ -108,6 +108,8 @@ Hist.
 No hacer nada                           
 Falta algún fichero necesarios<br>      
 Use FTP o \"Sketch Data Upload\"<br>    
+Guardar/Exportar                        
+Idioma                                  
                                        .
                                        .
                                        .
