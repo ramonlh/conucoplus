@@ -299,6 +299,12 @@ if (!event.data) {event.data={};}
 event.data['last']=event.payload        
 iconOff                                 
 iconOn                                  
+GPIO                                    
+SMALL                                   
+Local IP                                
+Public IP                               
+Main Device                             
+MQTT Dash: conuco/dash                  
                                        .
                                        .
                                        .
