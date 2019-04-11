@@ -195,7 +195,7 @@ void   initEntDig()
     //    MBnode.begin(1, SoftSerial);
     pinMode (edPin[0], INPUT_PULLUP);
     pinMode (edPin[1], OUTPUT);  }
-  for (byte i=0;i<2;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i]);
+  for (byte i=0;i<maxED;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i]);
 }
 
 void initSalDig()

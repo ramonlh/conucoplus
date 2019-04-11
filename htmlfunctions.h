@@ -292,13 +292,14 @@ void ICACHE_FLASH_ATTR writeForm(PGM_P phtm)
   printP(c(tclass), ig, tnormal, mayor);
 }
 
-void ICACHE_FLASH_ATTR writeFooter(PGM_P texto, boolean cerrar)
+void ICACHE_FLASH_ATTR writeFooter(int texto, boolean cerrar)
 {
   printP(menor, barra, table, mayor);               // final <table>
   printP(menor, c(tinput), b, type, ig, comillas);
   printP(submit);                                   // submit
   printP(comillas, b, tvalue, ig, comillas);      // " value="texto
-  printP(texto);                                    
+//  printP(texto);                                    
+  pt(texto);                                    
   if (cerrar) printP(comillas, b, c(onclickclose));
   printP(comillas);
   printfincampo();

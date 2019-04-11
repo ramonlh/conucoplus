@@ -56,7 +56,7 @@
 #define DIRIP 26
 #define disp 27
 #define dispositivo 28
-//#define ejecutar 29
+#define ejecutar 29
 #define ent 30
 #define entanalog 31
 #define entradasdig 32
@@ -68,7 +68,7 @@
 #define fabrica 38
 #define fecha 39
 #define files 40
-//#define guardar 41
+#define guardar 41
 #define hora 42
 #define inicial 43
 #define staticip 44
@@ -138,6 +138,9 @@
 //#define nohacernada 108
 #define faltafichero 109
 #define useftp 110
+#define guardarexportar 111  
+#define idioma 112                                  
+
 
 //////////////////////////////////////////////////////////////////////
 ////// textos, deben coincidir con los textos del fichero common.txtst
@@ -444,4 +447,9 @@
 #define evendatalast 299
 #define dashiconoff 300
 #define dashiconon 301
-
+#define gpio 302
+#define small 303
+#define localip 304
+#define publicip 305
+#define maindevice 306
+#define mqttdashtopic 307

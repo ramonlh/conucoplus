@@ -212,36 +212,43 @@ void senddashrec(File f)
   f.print(comillas);f.print(coma);
 }
 
+void sendcomunes(File f, byte i)
+{
+  if (i>0) f.print(coma);
+  f.print(llave_i);
+  senddashtag(f, dashenableIntermediateState);  senddashbool(f, true, true); 
+  senddashtag(f, dashenteredIntermediateStateAt);  senddashint(f, 1, true); 
+  senddashtag(f, dashintermediateStateTimeout);  senddashint(f, 1, true); 
+  senddashtag(f, dashqos);  senddashint(f, 0, true); 
+  senddashtag(f, dashretained);  senddashbool(f, false, true); 
+  senddashtag(f, dashjsOnReceive);  senddashtext(f, vacio, true); 
+  senddashtag(f, dashjsonPath);  senddashtext(f, vacio, true);
+  senddashtag(f, dashlastActivity);  senddashint(f, 0, true);
+  senddashtag(f, dashupdateLastPayloadOnPub);  senddashbool(f, true, true); 
+  senddashtag(f, dashjsBlinkExpression);  senddashtext(f, vacio, true); 
+  senddashtag(f, dashenablePub);  senddashbool(f, true, true); 
+  senddashtag(f, dashjsOnTap);  senddashtext(f, vacio, true); 
+  senddashtag(f, dashjsOnDisplay);  senddashtext(f, vacio, true); 
+  senddashtag(f, dashid);  senddashint(f, i+1, true);
+  senddashtag(f, dashlongId);  senddashint(f, i+1 , true); 
+}
+
 void createdashfile()
 {
   File f=SPIFFS.open(filedash,letraw);
   if (f)  
     { 
     f.print(corchete_i); 
-    for (int i=0;i<maxsalrem+8;i++)     
+    for (int i=0;i<maxsalrem+11;i++)     
       { 
-      if (i>0) f.print(coma);
-      f.print(llave_i);
-      senddashtag(f, dashenableIntermediateState);  senddashbool(f, true, true); 
-      senddashtag(f, dashenteredIntermediateStateAt);  senddashint(f, 1, true); 
-      senddashtag(f, dashintermediateStateTimeout);  senddashint(f, 1, true); 
-      senddashtag(f, dashqos);  senddashint(f, 0, true); 
-      senddashtag(f, dashretained);  senddashbool(f, false, true); 
-      senddashtag(f, dashjsOnReceive);  senddashtext(f, vacio, true); 
-      senddashtag(f, dashjsonPath);  senddashtext(f, vacio, true);
-      senddashtag(f, dashlastActivity);  senddashint(f, 0, true);
-      senddashtag(f, dashupdateLastPayloadOnPub);  senddashbool(f, true, true); 
-      senddashtag(f, dashjsBlinkExpression);  senddashtext(f, vacio, true); 
-      senddashtag(f, dashenablePub);  senddashbool(f, true, true); 
-      senddashtag(f, dashjsOnTap);  senddashtext(f, vacio, true); 
-      senddashtag(f, dashjsOnDisplay);  senddashtext(f, vacio, true); 
-      senddashtag(f, dashid);  senddashint(f, i+1, true);
-      senddashtag(f, dashlongId);  senddashint(f, i+1 , true); 
-      senddashtag(f, dashname); if (i<8) senddashlocal(f, i, true); else senddashrem(f, i-8, true); 
-      senddashtag(f, dashtopic); if (i<8) senddashpub(f, i, true, vacio); else senddashpubrem(f, i-8, conf.senalrem[i-8], true, vacio);
-      if (i<8)
+      if (i<11)
+        sendcomunes(f,i);
+      else
+        if ((conf.idsalremote[i-11] >=151) && (conf.idsalremote[i-11] <=167))
+          sendcomunes(f,i);
+      if (i<8)      // señales locales
         {
-        if (i<=3)
+        if (i<=3)       // sondas + ent. analógica
           {
           senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
           senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
@@ -249,8 +256,34 @@ void createdashfile()
           senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
           senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i<=2)?tset:vacio); 
           senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+          senddashtag(f, dashtype); senddashint(f, 1, true); 
           }
-        else
+        else if (i<=5)    // entradas digitales
+          {
+          if (conf.tipoED[i-4]>1)    // DHT
+            {
+            senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+            senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+            senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+            senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+            senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+            senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+            senddashtag(f, dashtype); senddashint(f, 1, true); 
+            }
+          else
+            {
+            senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+            senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
+            senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
+            senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
+            senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
+            senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
+            senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+            senddashtag(f, dashiconon);  senddashtext(f, ic_radio_button_checked,true); 
+            senddashtag(f, dashtype); senddashint(f, 2, true); 
+            }
+          }
+        else    // salidas digitales
           {
           senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
           senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
@@ -259,35 +292,62 @@ void createdashfile()
           senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
           senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
           senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
-          senddashtag(f, dashiconon);  senddashtext(f, i<=5?ic_radio_button_checked:ic_settings_poweron,true); 
+          senddashtag(f, dashiconon);  senddashtext(f, ic_settings_poweron,true); 
+          senddashtag(f, dashtype); senddashint(f, 2, true); 
           }
+        senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+        senddashtag(f, dashname); senddashlocal(f, i, false); 
+        f.print(llave_f); 
         }
-      else
+      else if (i<11)        // id, ip, ipp
         {
-        if (conf.senalrem[i-8]<=3)
-          {
-          senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
-          senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
-          senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
-          senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-          senddashtag(f, dashtopicPub); senddashpubrem(f, i-8, conf.senalrem[i-8], true,(conf.senalrem[i-8]<=2)?tset:vacio);     ///////////////////////////   modificar
-          senddashtag(f, dashpostfix); senddashtext(f, vacio,true);
-          }
-        else
-          {
-          senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
-          senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
-          senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
-          senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
-          senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
-          senddashtag(f, dashiconoff);  senddashtext(f, conf.senalrem[i-8]<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
-          senddashtag(f, dashtopicPub); senddashpubrem(f, i-8, conf.senalrem[i-8], true, conf.senalrem[i]<=5?tstate:tset);     ///////////////////////////   modificar
-          senddashtag(f, dashiconon);  senddashtext(f, conf.senalrem[i-8]<=5?ic_radio_button_checked:ic_settings_poweron,true); 
-          }
-        senddashtag(f, dashtype);  senddashint(f, conf.senalrem[i-8]<=3?1:2, false); 
+        senddashtag(f, dashlastPayload);  senddashint(f, 0, true);
+        senddashtag(f, dashmainTextSize);  senddashtext(f, small,true); 
+        senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+        senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+        senddashtag(f, dashtopicPub); senddashpub(f, i, true, tstate);  
+        senddashtag(f, dashpostfix); senddashtext(f, vacio,true);
+        senddashtag(f, dashtype); senddashint(f, 1, true); 
+        senddashtag(f, dashname); senddashtext(f, i==8?maindevice:i==9?localip:publicip,true); 
+        senddashtag(f, dashtopic); senddashpub(f, i, false, vacio);
+        f.print(llave_f); 
         }
-      senddashtag(f, dashtype); senddashint(f, i<=3?1:2, false); 
-      f.print(llave_f); 
+      else      // señales remotas
+        {
+        if (conf.idsalremote[i-11] <=31)    // modbus
+          {
+          }
+        else if ((conf.idsalremote[i-11] >=151) && (conf.idsalremote[i-11] <=167))
+          {
+          if (conf.senalrem[i-11]<=3)
+            {
+            senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
+            senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+            senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+            senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true,(conf.senalrem[i-11]<=2)?tset:vacio);     ///////////////////////////   modificar
+            senddashtag(f, dashpostfix); senddashtext(f, vacio,true);
+            }
+          else
+            {
+            senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+            senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
+            senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
+            senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
+            senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
+            senddashtag(f, dashiconoff);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true, conf.senalrem[i-11]<=5?tstate:tset);     ///////////////////////////   modificar
+            senddashtag(f, dashiconon);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_checked:ic_settings_poweron,true); 
+            }
+          senddashtag(f, dashname); senddashrem(f, i-11, true); 
+          senddashtag(f, dashtopic); senddashpubrem(f, i-11, conf.senalrem[i-11], true, vacio);
+          senddashtag(f, dashtype);  senddashint(f, conf.senalrem[i-11]<=3?1:2, false); 
+          f.print(llave_f); 
+          }
+        else          // resto, I2C
+          {
+          }
+        }
       }
     f.print(corchete_f);
     f.close();   
@@ -397,7 +457,8 @@ void ICACHE_FLASH_ATTR loginHTML()
   printP(menor, barra, table, mayor);
   printP(menor, c(tinput), b, type, ig, comillas);
   printP(submit, comillas, b, tvalue, ig, comillas);
-  printP(tguardar, comillas, mayor);
+  pt(guardar);
+  printP(comillas, mayor);
   printP(menor, barra, c(tinput), mayor);
   pc(form_f);
   pc(body_f);
@@ -982,7 +1043,7 @@ void ICACHE_FLASH_ATTR panelHTML() {
     for (byte i=0; i<maxED; i++)
       if (getbit8(conf.bshowbypanel[auxI], i+4))
         {
-        if ((conf.tipoED[i]==0) || (conf.tipoED[i]==1))  // entrada digital ON/OFF o OFF/ON
+        if (conf.tipoED[i]<=1)  // entrada digital ON/OFF o OFF/ON
           {
           printP(menor, letrat, letrar, b);
           printP(c(tid), ig, comilla, letral); 
@@ -1357,7 +1418,7 @@ void ICACHE_FLASH_ATTR setupremHTML()
   printP(tr);
   printColspan(4);
   printP(t(pietiporem), td_f, tr_f);
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -1527,7 +1588,7 @@ void ICACHE_FLASH_ATTR setupsalremHTML()
     printI(maxsalrem - prisalrem - 8);
     printP(td_f, tr_f);
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -1861,7 +1922,7 @@ void ICACHE_FLASH_ATTR setupioHTML()
       printP(td_f,tr_f);
       }
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -1899,7 +1960,6 @@ void ICACHE_FLASH_ATTR setupDevHTML()
       else if (param_number==20) { conf.lang = server.arg(i).toInt(); } // idioma
       }
     saveconf();
-    createdashfile();
     sendOther(sdhtm,-1);
     return;
     }
@@ -1961,12 +2021,14 @@ void ICACHE_FLASH_ATTR setupDevHTML()
   printcampoF(15, conf.latitud, 6);  printP(td_f, td);
   printcampoF(16, conf.longitud, 6);  printP(td_f, td, td_f, tr_f);
 
-  printP(tr, td, PSTR("Idioma"),td_f);
+  printP(tr, td);
+  pt(idioma);
+  printP(td_f);
   printcampoCB(20, conf.lang, PSTR("Español"), PSTR("English"),true); 
   printColspan(2);
   printP(td_f,tr_f);
 
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -2019,7 +2081,7 @@ void ICACHE_FLASH_ATTR setupPanelHTML()
     checkBox(mpi+1, colorea,false);
     printP(colorea?th_f:td_f,tr_f);
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200(); 
 }
 
@@ -2098,7 +2160,7 @@ void ICACHE_FLASH_ATTR setupbyPanelHTML()
     printI(32-pribypanel);
     printP(href_f, td_f, tr_f);
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -2129,6 +2191,7 @@ void ICACHE_FLASH_ATTR setupNetServHTML()
       else if (param_number>=11) { server.arg(i).toCharArray(conf.mqttpath[param_number-11], 10);  }
       }
     saveconf();
+    createdashfile();
     sendOther(snshtm,-1);
     return;
     }
@@ -2232,13 +2295,14 @@ void ICACHE_FLASH_ATTR setupNetServHTML()
     printP(tr);
     printColspan(2);
     if (i==0) { printP(c(mqtt),b); pc(tpath); }
+    if (i==2) { printP(c(mqttdashtopic)); }
     printP(td_f,td);
     printcampoC(11+(i*2), conf.mqttpath[i*2], 10, true, true, false,false);
     printP(barra,td_f,td);
     printcampoC(12+(i*2), conf.mqttpath[i*2+1], 10, true, true, false,false);
     printP(barra,td_f,tr_f); 
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardarexportar, false);
   serversend200();
 }
 
@@ -2292,7 +2356,7 @@ void ICACHE_FLASH_ATTR setuprfHTML()
   for (byte i=0; i<maxsalrem; i++) 
     if (conf.idsalremote[i]!=0) 
       if (conf.senalrem[i]>=6) { lineasetuprfonoff(true, i,readdescr(filesalrem,i,20)); }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -2328,7 +2392,7 @@ void ICACHE_FLASH_ATTR roombaHTML()
   linearoomba(c(PLAY), 141);
   linearoomba(c(SENSORS), 142);
   linearoomba(c(DOCK), 143);
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -2514,7 +2578,7 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
   printP(tr, td, treset, td_f);
   checkBox(5, hacerresetrem,true);  
   printP(tr_f);
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -2660,7 +2724,7 @@ void ICACHE_FLASH_ATTR setupDevRemHTML()
     printcampoF(14, latitudtemp, 6);   printP(td_f, td);
     printcampoF(15, longitudtemp, 6);   printP(td_f, c(td_if), tr_f);
 
-    writeFooter(tguardar, false);
+    writeFooter(guardar, false);
     }
   serversend200();
 }
@@ -2951,7 +3015,7 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
         printP(td_f, tr_f);
         }
       }
-    writeFooter(tguardar, false);
+    writeFooter(guardar, false);
     }
   serversend200();
 }
@@ -3106,7 +3170,8 @@ void ICACHE_FLASH_ATTR setupNetHTML()
   printP(menor, barra, table, mayor, menor, c(tinput));
   printP(b, type, ig, comillas, submit, comillas);
   printP(b, tvalue, ig, comillas);
-  printP(tguardar, comillas);
+  pt(guardar);
+  printP(comillas);
   printP(mayor, menor, barra, c(tinput), mayor);
   pc(form_f);
   printP(c(body_f), menor, barra);
@@ -3158,7 +3223,7 @@ void ICACHE_FLASH_ATTR setupSegHTML()
   printparCP(t(usuario), 1, conf.userDev, 20, false);
   printparCP(t(contrasena), 2, "", 20, true);
   printparCP(t(confcontrasena), 3, "", 20, true);
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -3208,7 +3273,7 @@ void ICACHE_FLASH_ATTR setupPrgHTML()
     checkBox(mpi+1, colorea,false);
     printP(colorea?th_f:td_f,tr_f);
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
   clearmsg();
 }
@@ -3277,7 +3342,7 @@ void ICACHE_FLASH_ATTR setupWebCallHTML()
     checkBox(mpi + 2, colorea,false);
     printP(colorea ? th_f : td_f, tr_f);
   }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -3436,7 +3501,7 @@ void ICACHE_FLASH_ATTR setupSemHTML()
       }
     printP(tr_f);
   }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -3713,7 +3778,7 @@ void ICACHE_FLASH_ATTR setupEveHTML()
     else if (conf.bPRGeve[i][0]>0) printP(getbit8(conf.bevenniv, i)?ON:OFF);
     printP(td_f, tr_f);
     }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -3825,7 +3890,7 @@ void ICACHE_FLASH_ATTR setupFecHTML()
       }
     printP(tr_f);
   }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -3958,7 +4023,7 @@ void ICACHE_FLASH_ATTR setupEscHTML()
         }
         printP(tr_f);
       }
-  writeFooter(tguardar, false);
+  writeFooter(guardar, false);
   serversend200();
 }
 
@@ -4111,7 +4176,7 @@ void ICACHE_FLASH_ATTR resetHTML()
   printP(trestart, td_f);
   printcampoCB(0, 0, nohacernada, treset, trestart, tresetwifi,tresetfab,true);
   printP(tr_f);
-  writeFooter(tejecutar, false);
+  writeFooter(ejecutar, false);
   serversend200();
 }
 
