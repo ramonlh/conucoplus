@@ -178,15 +178,17 @@ void initwebserver()
   server.begin();
 }
 
-void   initEntDig()
+void initEntDig()
 {
   if (conf.modo45==0) {         //Entradas digitales ON/OFF
     Serial.print(c(tinput)); Serial.print(dp); Serial.println(c(modet));
     pinMode(edPin[0], INPUT_PULLUP);
-    pinMode(edPin[1], INPUT_PULLUP);    }
+    pinMode(edPin[1], INPUT_PULLUP);    
+    for (byte i=0;i<maxED;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i]);
+    }
   else if (conf.modo45==1) {    // I2C
     Serial.print(i2c); Serial.print(b); Serial.println(c(modet));
-    Wire.begin(edPin[0], edPin[1]);
+//    Wire.begin(edPin[0], edPin[1]);
     if (bmp085.begin()) {bmp085enabled=true; Serial.println(c(BMP085OK));} else { Serial.print(b);  Serial.println(c(BMP085notfound));    }  }
   else if (conf.modo45==2) {    // modbus
     Serial.print(modbust); Serial.print(b); Serial.println(c(modet));
@@ -195,7 +197,6 @@ void   initEntDig()
     //    MBnode.begin(1, SoftSerial);
     pinMode (edPin[0], INPUT_PULLUP);
     pinMode (edPin[1], OUTPUT);  }
-  for (byte i=0;i<maxED;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i]);
 }
 
 void initSalDig()
@@ -394,8 +395,8 @@ void taskvar()
   lastpro = 0; lastcode = 0; lastlen = 0; // pone a cero el último código 433
   leevaloresOW();
   procesaconsignas();
-  if ((conf.tipoED[0]==2) || (conf.tipoED[1]==2)) leevaloresDHT();
-  if (conf.modo45 == 2) leevaloresMB();
+  if (conf.modo45 == 0) if ((conf.tipoED[0]==2) || (conf.tipoED[1]==2)) leevaloresDHT();
+  else if (conf.modo45 == 2) leevaloresMB();
   if (WiFi.isConnected()) {
     unsigned long tini = millis();
     if (conf.modomyjson == 1) { putmyjson(); }

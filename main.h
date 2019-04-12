@@ -3,7 +3,9 @@ void ICACHE_FLASH_ATTR mqttpublish(byte i)
 {
   strcpy(auxdesc,conf.mqttpath[0]); strcat(auxdesc,"/");
   for (byte j=1;j<6;j++) { if (strlen(conf.mqttpath[j])>0) { strcat(auxdesc,conf.mqttpath[j]); strcat(auxdesc,"/"); } }
-  strcat(auxdesc,idpin[i]);
+  if (i<15) strcat(auxdesc,idpin[i]);
+  else if (conf.idsalremote[i-100]==77) {strcat(auxdesc,letrar); strcat(auxdesc,itoa(i-100,buff,10)); }
+  
   if (i<=2)                              // sondas temperatura y consignas
     if (conf.accsetpoint[i]<2)
       { strcpy(auxchar,ftoa(MbR[i]/10,1)); strcat(auxchar,grados);strcat(auxchar,barra); strcat(auxchar,ftoa(conf.setpoint[i]/10,1)); strcat(auxchar,grados); }                           // sondas temperatura y consignas
@@ -22,6 +24,8 @@ void ICACHE_FLASH_ATTR mqttpublish(byte i)
     for (byte j=1;j<4;j++) { strcat(auxchar,"."); strcat(auxchar,itoa(WiFi.localIP()[j],buff,10)); }     }
   else if (i==10) { strcpy(auxchar,conf.myippub);  }                          // IP pública
   else if ((i>=11)&&(i<=13)) { strcpy(auxchar,ftoa(conf.setpoint[i-11]*10,1));  }  // consignas
+  else if (conf.idsalremote[i-100]==77)   // BMP085/BMP180 T,P
+    { strcpy(auxchar,ftoa(bmp085.readTemperature()*10,1)); strcat(auxchar,grados);strcat(auxchar,barra); strcat(auxchar,ftoa(bmp085.readPressure()/10,1)); strcat(auxchar,mbar); }
   PSclient.publish(auxdesc, auxchar);
   strcpy(auxdesc,"");strcpy(auxchar,"");
 }
@@ -71,7 +75,14 @@ int ICACHE_FLASH_ATTR mqttextraepin(char* topic, String command)
   return encontrado?i:-1;
 }
 
-void ICACHE_FLASH_ATTR mqttpublishallvalues()  { for (byte i=0;i<14;i++) mqttpublish(i); }
+void ICACHE_FLASH_ATTR mqttpublishallvalues()  
+  { 
+  for (byte i=0;i<14;i++) mqttpublish(i);
+  for (byte i=0;i<maxsalrem;i++)
+    {
+    if (conf.idsalremote[i]==77) mqttpublish(i+100);      // BMP085/BMP180 T/P    
+    }
+  }
 
 void mqttcallback(char* topic, byte* payload, unsigned int length) 
 {
@@ -190,6 +201,14 @@ void senddashpubrem(File f, byte rem, int npin, boolean wcoma, PGM_P suf)
   f.print(comillas); f.print(auxdesc); f.print(comillas); if (wcoma) f.print(coma);
 }
 
+void senddashi2c(File f, byte rem, int npin, boolean wcoma, PGM_P suf)
+{
+  strcpy(auxdesc,conf.mqttpath[0]); strcat(auxdesc,barra);
+  for (byte j=1;j<6;j++) { if (strlen(conf.mqttpath[j])>0) { strcat(auxdesc,conf.mqttpath[j]); strcat(auxdesc,"/"); }  }
+  strcat(auxdesc,letrar); strcat(auxdesc,itoa(conf.idsalremote[npin],buff,10)); strcat(auxdesc,suf);
+  f.print(comillas); f.print(auxdesc); f.print(comillas); if (wcoma) f.print(coma);
+}
+
 void senddashtap(File f, int npin, boolean wcoma, PGM_P suf)
 {
   strcpy(auxdesc,comillas);
@@ -241,11 +260,17 @@ void createdashfile()
     f.print(corchete_i); 
     for (int i=0;i<maxsalrem+11;i++)     
       { 
-      if (i<11)
+      if (i<=3) sendcomunes(f,i);
+      else if (i<=5) { if (conf.modo45==0) sendcomunes(f,i); }
+      else if (i<11) { sendcomunes(f,i); }
+      else if ((conf.idsalremote[i-11]>=1) && (conf.idsalremote[i-11]<=31))   // modbus
+        {  
+        }
+      else if ((conf.idsalremote[i-11]>=151) && (conf.idsalremote[i-11]<=167))
         sendcomunes(f,i);
-      else
-        if ((conf.idsalremote[i-11] >=151) && (conf.idsalremote[i-11] <=167))
-          sendcomunes(f,i);
+      else if (conf.idsalremote[i-11]>0)
+        sendcomunes(f,i);
+        
       if (i<8)      // señales locales
         {
         if (i<=3)       // sondas + ent. analógica
@@ -257,30 +282,39 @@ void createdashfile()
           senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i<=2)?tset:vacio); 
           senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
           senddashtag(f, dashtype); senddashint(f, 1, true); 
+          senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+          senddashtag(f, dashname); senddashlocal(f, i, false); 
+          f.print(llave_f); 
           }
         else if (i<=5)    // entradas digitales
           {
-          if (conf.tipoED[i-4]>1)    // DHT
+          if (conf.modo45==0)
             {
-            senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
-            senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
-            senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
-            senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-            senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
-            senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
-            senddashtag(f, dashtype); senddashint(f, 1, true); 
-            }
-          else
-            {
-            senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
-            senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
-            senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
-            senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
-            senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
-            senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
-            senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
-            senddashtag(f, dashiconon);  senddashtext(f, ic_radio_button_checked,true); 
-            senddashtag(f, dashtype); senddashint(f, 2, true); 
+            if (conf.tipoED[i-4]>1)    // DHT
+              {
+              senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+              senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+              senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+              senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+              senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+              senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+              senddashtag(f, dashtype); senddashint(f, 1, true); 
+              }
+            else
+              {
+              senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+              senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
+              senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
+              senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
+              senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
+              senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
+              senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+              senddashtag(f, dashiconon);  senddashtext(f, ic_radio_button_checked,true); 
+              senddashtag(f, dashtype); senddashint(f, 2, true); 
+              senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+              senddashtag(f, dashname); senddashlocal(f, i, false); 
+              f.print(llave_f); 
+              }
             }
           }
         else    // salidas digitales
@@ -294,11 +328,12 @@ void createdashfile()
           senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
           senddashtag(f, dashiconon);  senddashtext(f, ic_settings_poweron,true); 
           senddashtag(f, dashtype); senddashint(f, 2, true); 
+          senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+          senddashtag(f, dashname); senddashlocal(f, i, false); 
+          f.print(llave_f); 
           }
-        senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
-        senddashtag(f, dashname); senddashlocal(f, i, false); 
-        f.print(llave_f); 
         }
+        
       else if (i<11)        // id, ip, ipp
         {
         senddashtag(f, dashlastPayload);  senddashint(f, 0, true);
@@ -312,6 +347,7 @@ void createdashfile()
         senddashtag(f, dashtopic); senddashpub(f, i, false, vacio);
         f.print(llave_f); 
         }
+        
       else      // señales remotas
         {
         if (conf.idsalremote[i-11] <=31)    // modbus
@@ -336,7 +372,7 @@ void createdashfile()
             senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
             senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
             senddashtag(f, dashiconoff);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
-            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true, conf.senalrem[i-11]<=5?tstate:tset);     ///////////////////////////   modificar
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true, conf.senalrem[i-11]<=5?tstate:tset);     
             senddashtag(f, dashiconon);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_checked:ic_settings_poweron,true); 
             }
           senddashtag(f, dashname); senddashrem(f, i-11, true); 
@@ -346,6 +382,16 @@ void createdashfile()
           }
         else          // resto, I2C
           {
+          senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+          senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+          senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+          senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+          senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+          senddashtag(f, dashtopicPub); senddashtext(f, vacio, true); 
+          senddashtag(f, dashname); senddashrem(f, i-11, true); 
+          senddashtag(f, dashtopic); senddashi2c(f, i-11, conf.senalrem[i-11], true, vacio);
+          senddashtag(f, dashtype); senddashint(f, 1, false); 
+          f.print(llave_f); 
           }
         }
       }
@@ -955,7 +1001,6 @@ void ICACHE_FLASH_ATTR panelHTML() {
   boolean conectado = (autOK());
   clearmsg();
   if (server.method()==HTTP_POST) return; 
-  Serial.print("Panel:"); Serial.println(millis());
   writeHeader(false,true);
   byte auxI=server.arg(0).toInt();
   panelact=auxI;
@@ -1130,7 +1175,7 @@ void ICACHE_FLASH_ATTR panelHTML() {
               printP(tr, td);
               if (conf.showN) { printparentesis(letrar, i+1); printparentesis(letraR, conf.idsalremote[i]);  }
               printP(b, readdescr(filesalrem, i, 20), td_f, td);
-              if (bmp085enabled) printF(bmp085.readTemperature(),1);
+              if (bmp085enabled) printF(bmp085.readTemperature(),2);
               printP(b, celsius, b,barraesp);
               if (bmp085enabled) printF(bmp085.readPressure()/100,0);
               printP(b, letram, letrab, td_f, tr_f);
@@ -1171,7 +1216,6 @@ void ICACHE_FLASH_ATTR panelHTML() {
   printP(tr_f, menor, barra, table, mayor);
   printP(c(body_f), menor, barra);
   printP(thtml, mayor);
-  Serial.print("Panel FIN:"); Serial.println(millis());
   serversend200();
 }
 

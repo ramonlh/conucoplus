@@ -146,6 +146,7 @@ PGM_P(amas)="a+";
 PGM_P(rmas)="r+";
 PGM_P(wmas)="w+";
 PGM_P(grados)="ºC";
+PGM_P(mbar)="mb";
 PGM_P(celsius)="&#8451;";
 PGM_P(symsum)="&#8721;";
 PGM_P(symhoz)="&#9773;";
