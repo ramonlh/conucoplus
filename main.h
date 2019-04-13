@@ -231,9 +231,12 @@ void senddashrec(File f)
   f.print(comillas);f.print(coma);
 }
 
+boolean primero=true;
+
 void sendcomunes(File f, byte i)
 {
-  if (i>0) f.print(coma);
+  if (!primero) f.print(coma);
+  primero=false;
   f.print(llave_i);
   senddashtag(f, dashenableIntermediateState);  senddashbool(f, true, true); 
   senddashtag(f, dashenteredIntermediateStateAt);  senddashint(f, 1, true); 
@@ -257,12 +260,18 @@ void createdashfile()
   File f=SPIFFS.open(filedash,letraw);
   if (f)  
     { 
+    primero=true;
     f.print(corchete_i); 
     for (int i=0;i<maxsalrem+11;i++)     
       { 
-      if (i<=3) sendcomunes(f,i);
-      else if (i<=5) { if (conf.modo45==0) sendcomunes(f,i); }
-      else if (i<11) { sendcomunes(f,i); }
+      if (i<=3) 
+        { if (getbit8(conf.bshowbypanel[0],i)==1) sendcomunes(f,i); }
+      else if (i<=5) 
+        { if (conf.modo45==0) if (getbit8(conf.bshowbypanel[0],i)) sendcomunes(f,i); }
+      else if (i<=7)
+        { if (getbit8(conf.bshowbypanel[0],i)) sendcomunes(f,i); }
+      else if (i<11) 
+        { sendcomunes(f,i); }
       else if ((conf.idsalremote[i-11]>=1) && (conf.idsalremote[i-11]<=31))   // modbus
         {  
         }
@@ -273,51 +282,57 @@ void createdashfile()
         
       if (i<8)      // señales locales
         {
-        if (i<=3)       // sondas + ent. analógica
-          {
-          senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
-          senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
-          senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
-          senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-          senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i<=2)?tset:vacio); 
-          senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
-          senddashtag(f, dashtype); senddashint(f, 1, true); 
-          senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
-          senddashtag(f, dashname); senddashlocal(f, i, false); 
-          f.print(llave_f); 
-          }
-        else if (i<=5)    // entradas digitales
-          {
-          if (conf.modo45==0)
+        if (i<=3) 
+          { if (getbit8(conf.bshowbypanel[0],i)==1)      // sondas + ent. analógica
             {
-            if (conf.tipoED[i-4]>1)    // DHT
+            senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
+            senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+            senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+            senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+            senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i<=2)?tset:vacio); 
+            senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+            senddashtag(f, dashtype); senddashint(f, 1, true); 
+            senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+            senddashtag(f, dashname); senddashlocal(f, i, false); 
+            f.print(llave_f); 
+            }
+          }
+        else if (i<=5) 
+          {
+          if (getbit8(conf.bshowbypanel[0],i))   // entradas digitales
+            {
+            if (conf.modo45==0)
               {
-              senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
-              senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
-              senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
-              senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-              senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
-              senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
-              senddashtag(f, dashtype); senddashint(f, 1, true); 
-              }
-            else
-              {
-              senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
-              senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
-              senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
-              senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
-              senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
-              senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
-              senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
-              senddashtag(f, dashiconon);  senddashtext(f, ic_radio_button_checked,true); 
-              senddashtag(f, dashtype); senddashint(f, 2, true); 
-              senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
-              senddashtag(f, dashname); senddashlocal(f, i, false); 
-              f.print(llave_f); 
+              if (conf.tipoED[i-4]>1)    // DHT
+                {
+                senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+                senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
+                senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
+                senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
+                senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
+                senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+                senddashtag(f, dashtype); senddashint(f, 1, false); 
+                f.print(llave_f); 
+                }
+              else
+                {
+                senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
+                senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 
+                senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
+                senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
+                senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
+                senddashtag(f, dashiconoff);  senddashtext(f, i<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
+                senddashtag(f, dashtopicPub); senddashpub(f, i, true, i<=5?tstate:tset); 
+                senddashtag(f, dashiconon);  senddashtext(f, ic_radio_button_checked,true); 
+                senddashtag(f, dashtype); senddashint(f, 2, true); 
+                senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
+                senddashtag(f, dashname); senddashlocal(f, i, false); 
+                f.print(llave_f); 
+                }
               }
             }
           }
-        else    // salidas digitales
+        else if (getbit8(conf.bshowbypanel[0],i))   // salidas digitales
           {
           senddashtag(f, dashlastPayload);  senddashtext(f, cero, true);
           senddashtag(f, dashoffcolor);  senddashint(f, -1,true); 

@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2001    // 
+#define versinst 2002    // 
 #define debug true
 #define debugwifi false
 
@@ -188,7 +188,6 @@ void initEntDig()
     }
   else if (conf.modo45==1) {    // I2C
     Serial.print(i2c); Serial.print(b); Serial.println(c(modet));
-//    Wire.begin(edPin[0], edPin[1]);
     if (bmp085.begin()) {bmp085enabled=true; Serial.println(c(BMP085OK));} else { Serial.print(b);  Serial.println(c(BMP085notfound));    }  }
   else if (conf.modo45==2) {    // modbus
     Serial.print(modbust); Serial.print(b); Serial.println(c(modet));
