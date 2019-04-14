@@ -1,4 +1,3 @@
-
 boolean ICACHE_FLASH_ATTR clientremote(){
   return ((server.remoteIP[0]!=192) && (server.remoteIP[0]!=0)); }
 

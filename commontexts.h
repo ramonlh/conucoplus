@@ -199,6 +199,7 @@ PGM_P(downs)="PgDn";
 PGM_P(lefts)="LF";
 PGM_P(rigths)="RT";
 PGM_P(apppublish)="app.publish";
+PGM_P(tsetpoint)="SP";
 
 ///////////////////////////////
 
