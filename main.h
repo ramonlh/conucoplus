@@ -5,10 +5,7 @@ void ICACHE_FLASH_ATTR mqttpublish(int i)
   strcpy(auxdesc,conf.mqttpath[0]); strcat(auxdesc,"/");
   for (byte j=1;j<6;j++) { if (strlen(conf.mqttpath[j])>0) { strcat(auxdesc,conf.mqttpath[j]); strcat(auxdesc,"/"); } }
   if (i<15) strcat(auxdesc,idpin[i]);
-  else if (i>100)
-    {
-    strcat(auxdesc,letrar); strcat(auxdesc,itoa(i-100,buff,10)); 
-    }
+  else if (i>100) { strcat(auxdesc,letrar); strcat(auxdesc,itoa(i-100,buff,10)); }
   
   // forma auxchar=valor
   if (i<=2) { strcpy(auxchar,ftoa(MbR[i]/10,1)); }                        // sondas temperatura y consignas
@@ -24,7 +21,7 @@ void ICACHE_FLASH_ATTR mqttpublish(int i)
     strcat(auxchar,itoa(WiFi.localIP()[0],buff,10));
     for (byte j=1;j<4;j++) { strcat(auxchar,"."); strcat(auxchar,itoa(WiFi.localIP()[j],buff,10)); }     }
   else if (i==10) { strcpy(auxchar,conf.myippub);  }                               // IP pública
-  else if ((i>=11)&&(i<=13)) { strcpy(auxchar,tsetpoint); strcpy(auxchar,mayor); strcat(auxchar,ftoa(conf.setpoint[i-11]*10,1));  }  // consignas
+  else if ((i>=11)&&(i<=13)) { strcpy(auxchar,ftoa(conf.setpoint[i-11]*10,1));  }  // consignas
   else if (i>=100)
     {
     strcpy(auxchar,ftoa(bmp085.readTemperature()*10,1)); strcat(auxchar,grados);strcat(auxchar,barra); 
@@ -264,16 +261,16 @@ void createdashfile()
     { 
     primero=true;
     f.print(corchete_i); 
-    for (int i=0;i<maxsalrem+11;i++)     
+    for (int i=0;i<maxsalrem+14;i++)     
       { 
       if (i<=3)      { if (getbit8(conf.bshowbypanel[0],i)==1) sendcomunes(f,i); }
       else if (i<=5) { if (conf.modo45==0) if (getbit8(conf.bshowbypanel[0],i)) sendcomunes(f,i); }
       else if (i<=7) { if (getbit8(conf.bshowbypanel[0],i)) sendcomunes(f,i); }
       else if (i<11) { sendcomunes(f,i); }
       else if (i<14) { sendcomunes(f,i); }
-      else if ((conf.idsalremote[i-11]>=1) && (conf.idsalremote[i-11]<=31)) {   }  // modbus
-      else if ((conf.idsalremote[i-11]>=151) && (conf.idsalremote[i-11]<=167)) { sendcomunes(f,i); } // conucos
-      else if (conf.idsalremote[i-11]>0) {  sendcomunes(f,i);}
+      else if ((conf.idsalremote[i-14]>=1) && (conf.idsalremote[i-14]<=31)) {   }  // modbus
+      else if ((conf.idsalremote[i-14]>=151) && (conf.idsalremote[i-14]<=167)) { sendcomunes(f,i); } // conucos
+      else if (conf.idsalremote[i-14]>0) {  sendcomunes(f,i);}
         
       if (i<8)      // señales locales
         {
@@ -362,7 +359,7 @@ void createdashfile()
         senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
         senddashtag(f, dashtextcolor);  senddashint(f, 233, true); 
         senddashtag(f, dashprefix);  senddashtext(f, sphtm, true); 
-        senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i<=2)?tset:vacio); 
+        senddashtag(f, dashtopicPub); senddashpub(f, i, true,(i-1<=2)?tset:vacio); 
         senddashtag(f, dashpostfix);  senddashtext(f, grados, true); 
         senddashtag(f, dashtype); senddashint(f, 1, true); 
         senddashtag(f, dashtopic); senddashpub(f, i, true, vacio); 
@@ -371,27 +368,27 @@ void createdashfile()
         }
       else      // señales remotas
         {
-        if (conf.idsalremote[i-11] <=31)    // modbus
+        if (conf.idsalremote[i-14] <=31)    // modbus
           {
           }
-        else if ((conf.idsalremote[i-11] >=151) && (conf.idsalremote[i-11] <=167))
+        else if ((conf.idsalremote[i-14] >=151) && (conf.idsalremote[i-14] <=167))
           {
-          if (conf.senalrem[i-11]<=3)
+          if (conf.senalrem[i-14]<=3)
             {
             senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
             senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
             senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
             senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true,(conf.senalrem[i-11]<=2)?tset:vacio);     ///////////////////////////   modificar
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-14, conf.senalrem[i-14], true,(conf.senalrem[i-14]<=2)?tset:vacio);     ///////////////////////////   modificar
             senddashtag(f, dashpostfix); senddashtext(f, vacio,true);
             }
-          else if (conf.senalrem[i-11]<=5)
+          else if (conf.senalrem[i-14]<=5)
             {
             senddashtag(f, dashlastPayload);  senddashfloat(f, 0.0, true);
             senddashtag(f, dashmainTextSize);  senddashtext(f, medium,true); 
             senddashtag(f, dashtextcolor);  senddashint(f, -192, true); 
             senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
-            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true,tstate);     ///////////////////////////   modificar
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-14, conf.senalrem[i-14], true,tstate);     ///////////////////////////   modificar
             senddashtag(f, dashpostfix); senddashtext(f, vacio,true);
             }
           else
@@ -401,16 +398,16 @@ void createdashfile()
             senddashtag(f, dashoncolor);  senddashint(f, -192,true); 
             senddashtag(f, dashpayloadoff);  senddashtext(f, cero,true); 
             senddashtag(f, dashpayloadon);  senddashtext(f, uno,true); 
-            senddashtag(f, dashiconoff);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
-            senddashtag(f, dashtopicPub); senddashpubrem(f, i-11, conf.senalrem[i-11], true, tset);     
-            senddashtag(f, dashiconon);  senddashtext(f, conf.senalrem[i-11]<=5?ic_radio_button_checked:ic_settings_poweron,true); 
+            senddashtag(f, dashiconoff);  senddashtext(f, conf.senalrem[i-14]<=5?ic_radio_button_unchecked:ic_settings_poweroff,true); 
+            senddashtag(f, dashtopicPub); senddashpubrem(f, i-14, conf.senalrem[i-14], true, tset);     
+            senddashtag(f, dashiconon);  senddashtext(f, conf.senalrem[i-14]<=5?ic_radio_button_checked:ic_settings_poweron,true); 
             }
-          senddashtag(f, dashname); senddashrem(f, i-11, true); 
-          senddashtag(f, dashtopic); senddashpubrem(f, i-11, conf.senalrem[i-11], true, vacio);
+          senddashtag(f, dashname); senddashrem(f, i-14, true); 
+          senddashtag(f, dashtopic); senddashpubrem(f, i-14, conf.senalrem[i-14], true, vacio);
           
           senddashtag(f, dashtype);  
-          if (conf.senalrem[i-11]<=3) senddashint(f, 1, false); 
-          else if (conf.senalrem[i-11]<=5) senddashint(f, tipoedremote[i-11]<=1?2:1, false); 
+          if (conf.senalrem[i-14]<=3) senddashint(f, 1, false); 
+          else if (conf.senalrem[i-14]<=5) senddashint(f, tipoedremote[i-14]<=1?2:1, false); 
           else senddashint(f, 2, false); 
           f.print(llave_f); 
           }
@@ -422,8 +419,8 @@ void createdashfile()
           senddashtag(f, dashprefix);  senddashtext(f, vacio, true); 
           senddashtag(f, dashpostfix);  senddashtext(f, vacio, true); 
           senddashtag(f, dashtopicPub); senddashtext(f, vacio, true); 
-          senddashtag(f, dashname); senddashrem(f, i-11, true); 
-          senddashtag(f, dashtopic); senddashi2c(f, i-11, conf.senalrem[i-11], true, vacio);
+          senddashtag(f, dashname); senddashrem(f, i-14, true); 
+          senddashtag(f, dashtopic); senddashi2c(f, i-14, conf.senalrem[i-14], true, vacio);
           senddashtag(f, dashtype); senddashint(f, 1, false); 
           f.print(llave_f); 
           }
@@ -1685,7 +1682,7 @@ void ICACHE_FLASH_ATTR setupioHTML()
       {
       calcindices(i);
       if (resto==6) { setbit8(conf.mqttsalenable,indice,1); }
-      if (resto==7) { conf.tempmqtt[indice]=server.arg(i).toInt(); }
+//      if (resto==7) { conf.tempmqtt[indice]=server.arg(i).toInt(); }
       if (indice<=2)  // temperaturas
         {
         if (resto==0) { server.arg(i).toCharArray(auxdesc, 20); savedescr(filedesclocal, auxdesc, indice, 20); }
@@ -1977,7 +1974,7 @@ void ICACHE_FLASH_ATTR setupioHTML()
         
         printcampoCB(mpi+1, conf.valinic[i-6], OFF, ON, ultimovalor,true);
         printcampoL(mpi+2, conf.tempdefact[i-6], 8, true,true);
-        printcampoL(mpi+2, conf.tempdefdes[i-6], 8, true,true);
+        printcampoL(mpi+3, conf.tempdefdes[i-6], 8, true,true);
         printP(td);
         checkBox(mpi + 4, getbit8(conf.iftttpinSD, i - 6),false); // checkbox Notificar ON
         printP(barra);
@@ -4327,23 +4324,23 @@ void ICACHE_FLASH_ATTR systemHTML()
           }
         sendOther(rfhtm,-1); return;
         }
-      else if (server.arg(i).compareTo(PSTR("rrfon")) == 0)
+      else if (server.arg(i).compareTo(PSTR("rrfon"))==0)
         {
-        if ((server.arg(i - 1).toInt() >= 0) && (server.arg(i - 1).toInt() <= 15))
+        if ((server.arg(i-1).toInt()>=0) && (server.arg(i-1).toInt()<=31))
           {
-          conf.code433.proon[server.arg(i - 1).toInt() + 2] = lastpro;
-          conf.code433.codeon[server.arg(i - 1).toInt() + 2] = lastcode;
-          conf.code433.lenon[server.arg(i - 1).toInt() + 2] = lastlen;
+          conf.code433.proon[server.arg(i-1).toInt()+2] = lastpro;
+          conf.code433.codeon[server.arg(i-1).toInt()+2] = lastcode;
+          conf.code433.lenon[server.arg(i-1).toInt()+2] = lastlen;
           }
         sendOther(rfhtm,-1); return;
         }
       else if (server.arg(i).compareTo(PSTR("rrfoff")) == 0)
         {
-        if ((server.arg(i - 1).toInt() >= 0) && (server.arg(i - 1).toInt() <= 15))
+        if ((server.arg(i - 1).toInt()>=0) && (server.arg(i-1).toInt()<=31))
           {
-          conf.code433.prooff[server.arg(i - 1).toInt() + 2] = lastpro;
-          conf.code433.codeoff[server.arg(i - 1).toInt() + 2] = lastcode;
-          conf.code433.lenoff[server.arg(i - 1).toInt() + 2] = lastlen;
+          conf.code433.prooff[server.arg(i-1).toInt()+2]=lastpro;
+          conf.code433.codeoff[server.arg(i-1).toInt()+2]=lastcode;
+          conf.code433.lenoff[server.arg(i-1).toInt()+2]=lastlen;
           }
         sendOther(rfhtm,-1); return;
         }
@@ -4681,7 +4678,8 @@ void ICACHE_FLASH_ATTR procesaRF()
 
   i=0;
   encontrado=false;
-  while ((i<18) && (!encontrado))
+//  while ((i<18) && (!encontrado))
+  while (i<34)
     {
     if (lastcode==conf.code433.codeon[i])   {
       encontrado=true;
