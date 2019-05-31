@@ -1,4 +1,30 @@
-Sonda 1            Sonda 2             
-                  Ent. Analog.        Ent. Dig. 1            
-               Sal. Dig. 1              
-                   
+Temp. Tendedero    
+
+Sonda 2            
+
+Sonda 3            
+
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+Ent. Analog.       
+
+xxxxxxxxxxxxxxxxxxxx
+Ent. Dig. 1        
+
+Ent. Dig. 2        
+
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+Lavadora           
+
+Caldera            
+
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxx
