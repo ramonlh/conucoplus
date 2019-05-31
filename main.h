@@ -43,11 +43,7 @@ void ICACHE_FLASH_ATTR pinVAL(byte n, byte value, byte ori)
       if (value) tempact[n-sdPin[0]]=millis()/1000;
       else tempdes[n-sdPin[0]]=millis()/1000;
       setbit8(iftttchange, n-12,1);
-      if (ori==conf.iddevice) 
-        {
-        statusChange=true;
-        mqttpublish(n-6);
-        }
+      if (ori==conf.iddevice) { statusChange=true; mqttpublish(n-6);  }
       }
 }
 
@@ -85,13 +81,7 @@ void ICACHE_FLASH_ATTR mqttpublishallvalues()
 void mqttcallback(char* topic, byte* payload, unsigned int length) 
 {
   int auxb=mqttextraepin(topic,"set");     // tratamiento de "set"
-  if ((auxb>=6) && (auxb<=7))  // salidas relé
-    {
-    if ((char)payload[0]=='0') { pinVAL(auxb+6,0,0); }
-    if ((char)payload[0]=='1') { pinVAL(auxb+6,1,0); }
-    mqttpublish(auxb);
-    }
-  else if ((auxb>=0) && (auxb<=2))     // consigna
+  if ((auxb>=0) && (auxb<=2))     // set a tn, cambia la consigna
     {
     clearmsg();
     for (byte j=0; j<length;j++) msg+=(char)payload[j];
@@ -99,6 +89,12 @@ void mqttcallback(char* topic, byte* payload, unsigned int length)
     saveconf(); 
     mqttpublish(auxb);
     mqttpublish(auxb+11);
+    }
+  else if ((auxb>=6) && (auxb<=7))  // salidas relé
+    {
+    if ((char)payload[0]=='0') { pinVAL(auxb+6,0,0); }
+    if ((char)payload[0]=='1') { pinVAL(auxb+6,1,0); }
+    mqttpublish(auxb);
     }
   else if ((auxb>=11) && (auxb<=13))     // consigna
     {

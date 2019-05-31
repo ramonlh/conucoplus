@@ -298,7 +298,6 @@ void ICACHE_FLASH_ATTR writeFooter(int texto, boolean cerrar)
   printP(menor, c(tinput), b, type, ig, comillas);
   printP(submit);                                   // submit
   printP(comillas, b, tvalue, ig, comillas);      // " value="texto
-//  printP(texto);                                    
   pt(texto);                                    
   if (cerrar) printP(comillas, b, c(onclickclose));
   printP(comillas);

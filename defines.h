@@ -1,5 +1,6 @@
 
 
+#define modelo 8266
 #define ROMsize 4096
 #define maxerrorrem 5
 #define SLAVE 0
@@ -453,3 +454,5 @@
 #define publicip 305
 #define maindevice 306
 #define mqttdashtopic 307
+#define tlink 308
+

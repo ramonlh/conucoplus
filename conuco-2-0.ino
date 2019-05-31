@@ -19,7 +19,7 @@ extern "C" {
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>                // Local
 #include <ESP8266HTTPClient.h>        // Local
-#include <ESP8266WebServer.h>         // Local
+#include <ESP8266WebServer.h>         // Locals
 #include <ESP8266HTTPUpdateServer.h>  // Local
 #include <ESP8266httpUpdate.h>        // Local
 #include "ESP8266WiFiAP.h"            // Local
@@ -39,7 +39,9 @@ extern "C" {
 #include <ESP8266FtpServer.h>
 #include <PubSubClient.h>
 #include "variables.h"                // include
+//#include "uMQTTBroker.h"
 
+//uMQTTBroker myBroker;
 ADC_MODE(ADC_TOUT);
 ESP8266WebServer server(88);
 OneWire owire(owPin);
@@ -312,14 +314,64 @@ void ICACHE_FLASH_ATTR setup(void) {
   dPrint(t(versiont)); dPrint(dp); dPrintI(versinst); dPrint(crlf);
   dPrint(c(runningt)); dPrint(crlf);
   printhora(); dPrint(crlf);
+
+//  Serial.println("Starting MQTT broker");
+//  myBroker.init();
+//  myBroker.subscribe("#");
+
 }   // setup()
+
+void testChange()
+{
+  if (statusChange) {
+    lcdshowstatus();
+    if (conf.modomyjson==1) putmyjson();
+    if (conf.mododweet==1) postdweet(mac);
+    if (conf.iottweetenable==1) postIoTweet();
+    actualizamasters();
+    }
+  if (iftttchange[0]>0)
+    {
+    if (getbit8(iftttchange,0)==1)    // SD 0
+      {
+      if ((getbit8(conf.iftttpinSD,0)==1) && (getbit8(conf.MbC8,0)==1))
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,6,20), textonoff(1));
+      if ((getbit8(conf.iftttpinSD,8)==1) && (getbit8(conf.MbC8,0)==0))
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,6,20), textonoff(0));
+      }
+    if (getbit8(iftttchange,1)==1)    // SD 1
+      {
+      if ((getbit8(conf.iftttpinSD,1)==1) && (getbit8(conf.MbC8,1)==1))     // en ON
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,7,20), textonoff(1));
+      if ((getbit8(conf.iftttpinSD,9)==1) && (getbit8(conf.MbC8,1)==0))     // en OFF
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,7,20), textonoff(0));
+      } 
+        
+    if (getbit8(iftttchange,2)==1)     // ED 0
+      {
+      if ((getbit8(conf.iftttpinED,0)==1) && (getbit8(conf.MbC8,2)==1))     // en ON 
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,4,20), textonoff(1));
+      if ((getbit8(conf.iftttpinED,8)==1) && (getbit8(conf.MbC8,2)==0))     // en OFF
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,4,20), textonoff(0));
+      }
+
+    if (getbit8(iftttchange,3)==1)      // ED 1
+      {
+      if ((getbit8(conf.iftttpinED,1)==1) && (getbit8(conf.MbC8,3)==1))     // en ON 
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice,readdescr(filedesclocal,5,20), textonoff(1));
+      if ((getbit8(conf.iftttpinED,9)==1) && (getbit8(conf.MbC8,3)==0))     // en OFF
+        ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,5,20), textonoff(0));
+      }
+    iftttchange[0]=0;
+    }
+}
 
 void task1()      // 1 segundo
 {
   tini=millis();
   countfaulttime++;   // si se hace mayor que TempDesactPrg,desactiva ejecucion programas dependientes de fecha
- 
   leevaloresAN();
+  // gestión botón reset InitFabrica
   while (digitalRead(bt2Pin) == 0)  // pulsado botón 2, reset fábrica 20 seg, Reset Wifi: 10 seg.
     {
     tempbt2++;
@@ -329,55 +381,15 @@ void task1()      // 1 segundo
   if (tempbt2>=20) { initFab(); ESP.reset(); } // Reset Fábrica
   else if (tempbt2>=10) { reinitWiFi(); ESP.reset(); } // mod Reset Wifi
   tempbt2=0;
+  
   if (countfaulttime < conf.TempDesactPrg) procesaeventos();
   procesaTimeMax();
   for (byte j=0; j<maxsalrem; j++)
     if (conf.idsalremote[j] > 0)
       if ((conf.senalrem[j]==6) || (conf.senalrem[j]==7)) contaremote[j]++;
-  if (WiFi.isConnected())
+      
+  if (WiFi.isConnected()) testChange();
     {
-    if (statusChange) {
-      lcdshowstatus();
-      if (conf.modomyjson==1) putmyjson();
-      if (conf.mododweet==1) postdweet(mac);
-      if (conf.iottweetenable==1) postIoTweet();
-      actualizamasters();
-      }
-    if (iftttchange[0]>0)
-      {
-      if (getbit8(iftttchange,0)==1)    // SD 0
-        {
-        if ((getbit8(conf.iftttpinSD,0)==1) && (getbit8(conf.MbC8,0)==1))
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,6,20), textonoff(1));
-        if ((getbit8(conf.iftttpinSD,8)==1) && (getbit8(conf.MbC8,0)==0))
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,6,20), textonoff(0));
-        }
-      if (getbit8(iftttchange,1)==1)    // SD 1
-        {
-        if ((getbit8(conf.iftttpinSD,1)==1) && (getbit8(conf.MbC8,1)==1))     // en ON
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,7,20), textonoff(1));
-        if ((getbit8(conf.iftttpinSD,9)==1) && (getbit8(conf.MbC8,1)==0))     // en OFF
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,7,20), textonoff(0));
-        } 
-          
-      if (getbit8(iftttchange,2)==1)     // ED 0
-        {
-        if ((getbit8(conf.iftttpinED,0)==1) && (getbit8(conf.MbC8,2)==1))     // en ON 
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,4,20), textonoff(1));
-        if ((getbit8(conf.iftttpinED,8)==1) && (getbit8(conf.MbC8,2)==0))     // en OFF
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,4,20), textonoff(0));
-        }
-
-      if (getbit8(iftttchange,3)==1)      // ED 1
-        {
-        if ((getbit8(conf.iftttpinED,1)==1) && (getbit8(conf.MbC8,3)==1))     // en ON 
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice,readdescr(filedesclocal,5,20), textonoff(1));
-        if ((getbit8(conf.iftttpinED,9)==1) && (getbit8(conf.MbC8,3)==0))     // en OFF
-          ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal,5,20), textonoff(0));
-        }
-      iftttchange[0]=0;
-      }
-    }
   //    if ((millis()-tini)>5000) {Serial.print(F("1 SEG:"));  Serial.println(millis()-tini);}
   oled.setTextXY(4,0); oled.putNumber(hour());   oled.putChar(':');     // hora
   oled.setTextXY(4,3); oled.putNumber(minute()); oled.putChar(':');   // minutos
@@ -385,8 +397,31 @@ void task1()      // 1 segundo
   mact1 = millis();
 }
 
+//class myMQTTBroker: public uMQTTBroker
+//{
+//public:
+//    virtual bool onConnect(IPAddress addr, uint16_t client_count) {
+//      Serial.println(addr.toString()+" connected");
+//      return true;
+//    }
+//    
+//    virtual bool onAuth(String username, String password) {
+//      Serial.println("Username/Password: "+username+"/"+password);
+//      return true;
+//    }
+//    
+//    virtual void onData(String topic, const char *data, uint32_t length) {
+//      char data_str[length+1];
+//      os_memcpy(data_str, data, length);
+//      data_str[length] = '\0';
+//      
+//      Serial.println("received topic '"+topic+"' with data '"+(String)data_str+"'");
+//    }
+//};
+
 void taskvar()
 {
+
   tini = millis();
   //////////////////////////////////////////////
 /////////////////////////////////////////////   
@@ -404,8 +439,8 @@ void taskvar()
 //      actualizamasters();
     actualizaremotos();
     if (conf.mqttenable)
-    if (!PSclient.connected()) { if (mqttreconnect()) { mqttsubscribevalues();  } }
-    mqttpublishallvalues();
+      if (!PSclient.connected()) { if (mqttreconnect()) { mqttsubscribevalues();  } }
+      if (PSclient.connected()) mqttpublishallvalues();
 //    for (byte i=0;i<3;i++) if (getbit8(conf.mqttsalenable,i)==1) mqttpublish(i);
     }
   //    if ((millis()-tini)>5000) {printhora(); Serial.print(F(" 10 SEG:")); Serial.println(millis()-tini);}

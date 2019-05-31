@@ -43,8 +43,11 @@ void buildvalorC(PGM_P cad1, PGM_P cad2, PGM_P cad3, int pos, char *value, PGM_P
 
 void ICACHE_FLASH_ATTR buildJson()
 {
-  printP(llave_i,comillas,ID,comillas,dp,comillas);      for (byte i=0;i<6;i++) printP(conf.EEmac[i]);      // MAC
-  printP(comillas,coma,comillas,letraD,letraV,comillas); printPiP(dp,conf.iddevice,coma);                   // DV Device
+  printP(llave_i);
+  printP(comillas,letram,comillas,dp); printI(modelo); printP(coma);
+  printP(comillas,ID,comillas,dp,comillas);      for (byte i=0;i<6;i++) printP(conf.EEmac[i]);      // MAC
+  printP(comillas,coma);
+  printP(letraD,letraV,comillas); printPiP(dp,conf.iddevice,coma);                   // DV Device
   printP(comillas,letraM,letraJ,comillas);  printP(dp,comillas,conf.idmyjson,comillas,coma);                // MJ IdMyjson
   
   for (byte i=0; i<maxTemp; ++i) buildvalorF(letrat,vacio,vacio,i,(MbR[i]*0.01),2,vacio);  // TEMPERATURAS
@@ -81,10 +84,10 @@ void ICACHE_FLASH_ATTR buildJson()
 void ICACHE_FLASH_ATTR buildjsonext()
 {
   printremote();
-  printP(llave_i,comillas,ID,comillas,dp,comillas);
-  for (byte i=0;i<6;i++) printP(conf.EEmac[i]);
+  printP(llave_i);
+  printP(comillas,letram,comillas,dp); printI(modelo); printP(coma);
+  printP(comillas,ID,comillas,dp,comillas);      for (byte i=0;i<6;i++) printP(conf.EEmac[i]);      // MAC
   printP(comillas,coma);
-
   buildvalorI(letraD,letraV,vacio,-1,conf.iddevice,vacio);
   buildvalorC(letraM,letraJ,vacio,-1,conf.idmyjson,vacio);
   buildvalorC(c(alias),vacio,vacio,-1,conf.aliasdevice,vacio);
@@ -146,6 +149,7 @@ void ICACHE_FLASH_ATTR buildjsonext()
 void ICACHE_FLASH_ATTR buildJsonConf(boolean remoto, boolean sendpass, boolean resetear)
 {
   printP(llave_i);
+  printP(comillas,letram,comillas,dp); printI(modelo); printP(coma);
   printP(comillas,letras,letras,comillas,dp,comillas); printP(sendpass?remoto?ssidSTAtemp:conf.ssidSTA:vacio,comillas,coma);  // SSID
   printP(comillas,letrap,letras,comillas,dp,comillas); printP(sendpass?remoto?passSTAtemp:conf.passSTA:vacio,comillas,coma);  // PASS
   
