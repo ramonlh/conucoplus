@@ -195,8 +195,6 @@ void ICACHE_FLASH_ATTR printlinea(PGM_P texto) { for (byte i=0;i<20;i++) Serial.
 void ICACHE_FLASH_ATTR createhost(byte ip)
 {
   strcpy(host,hostraiz); 
-  strcat(host,itoa(conf.netseg, buff, 10)); 
-  strcat(host,punto); 
   strcat(host, itoa(ip, buff, 10));
 }
 

@@ -1421,12 +1421,6 @@ void ICACHE_FLASH_ATTR extraevaloresTempConf(boolean withpass)
 }
 void addsignal(byte n)    // n de 0 a 7, es la señal del remoto que hay que añadir a ñas señales remotas del master
 {
-  Serial.println("addsignal"); 
-  Serial.print("n:"); Serial.print(n);
-  Serial.print(" iddevicetemp:"); Serial.print(iddevicetemp);
-  Serial.print(" tiporemotetemp:"); Serial.print(tiporemotetemp);
-  Serial.print(" idpin[n]:"); Serial.print(idpin[n]);
-  Serial.println();
   byte i=0;
   boolean hayhueco=false;
   boolean existe=false;
@@ -1438,14 +1432,8 @@ void addsignal(byte n)    // n de 0 a 7, es la señal del remoto que hay que añ
     }
   if (hayhueco)
     {
-    conf.idsalremote[i]=iddevicetemp;
-    conf.senalrem[i]=n;
-    Serial.print("i:"); Serial.print(i);
-    Serial.print(" conf.idsalremote[i]:"); Serial.print(conf.idsalremote[i]);
-    Serial.print(" conf.senalrem[i]:"); Serial.print(conf.senalrem[i]);
-      readdescr(filedesctemp,n,20);
-      savedescr(filesalrem,auxdesc,i,20);
-    Serial.print(" auxdesc:"); Serial.println(auxdesc);
+    conf.idsalremote[i]=iddevicetemp;  conf.senalrem[i]=n;
+    readdescr(filedesctemp,n,20);  savedescr(filesalrem,auxdesc,i,20);
     }
 }
 
@@ -1539,7 +1527,6 @@ void ICACHE_FLASH_ATTR setupremHTML()
           printP(href_i, comillas);
           pc(thttp);
           printP(hostraiz);
-          printIP(conf.netseg,punto);
           printIP(conf.idremote[i],dp);
           printI(88);
           printP(comillas, b, c(newpage), mayor);
@@ -3216,28 +3203,28 @@ void ICACHE_FLASH_ATTR setupNetHTML()
     for (int i = 0; i < server.args(); i++)
       {
       calcindices(i);
-      if (param_number>=0 && param_number <= 5) { server.arg(i).toCharArray(conf.EEmac[i], 3);  }
-      else if (param_number>=6 && param_number <= 8)
+//      if (param_number>=0 && param_number<=5) { server.arg(i).toCharArray(conf.EEmac[i], 3);  }
+      if (param_number>=6 && param_number <= 8)
         {
         conf.EEip[param_number-6]=server.arg(i).toInt();
         conf.EEgw[2]=conf.EEip[2];
+        conf.netseg=conf.EEip[2];
         strcpy(hostraiz,itoa(conf.EEip[0],buff,10)); strcat(hostraiz, punto);
         strcat(hostraiz,itoa(conf.EEip[1],buff,10)); strcat(hostraiz, punto);
         strcat(hostraiz,itoa(conf.EEip[2],buff,10)); strcat(hostraiz, punto);
         }
-      else if (param_number>=10 && param_number <= 13) { conf.EEmask[param_number - 10] = server.arg(i).toInt(); }
-      else if (param_number>=14 && param_number <= 17) { conf.EEgw[param_number - 14] = server.arg(i).toInt();   }
-      else if (param_number>=18 && param_number <= 21) { conf.EEdns[param_number - 18] = server.arg(i).toInt();  }
+      else if (param_number>=10 && param_number <= 13) { conf.EEmask[param_number-10] = server.arg(i).toInt(); }
+      else if (param_number>=14 && param_number <= 17) { conf.EEgw[param_number-14] = server.arg(i).toInt();   }
+      else if (param_number>=18 && param_number <= 21) { conf.EEdns[param_number-18] = server.arg(i).toInt();  }
       else if (param_number==22) { conf.webPort = server.arg(i).toInt();  }
       else if (param_number==41) { conf.wifimode = server.arg(i).toInt(); }
       //      else if (param_number==42) {if (nAP != 0) WiFi.SSID(StrtoInt(server.arg(i))).toCharArray(conf.ssidSTA, 20);}
       else if (param_number==43) { server.arg(i).toCharArray(conf.passSTA, 20); }
-      //      else if (param_number == 44) {server.arg(i).toCharArray(conf.ssidAP,20);}
       else if (param_number==45) { server.arg(i).toCharArray(conf.passAP, 9); }
       else if (param_number==46) { conf.staticIP = server.arg(i).toInt(); }
-      else if (param_number>=47 && param_number <= 50) { conf.EEdns2[param_number - 47] = server.arg(i).toInt(); }
-      else if (param_number==53) { conf.timeoutrem = server.arg(i).toInt(); }
-      else if (param_number==54) { conf.timeoutNTP = server.arg(i).toInt(); }
+//      else if (param_number>=47 && param_number <= 50) { conf.EEdns2[param_number - 47] = server.arg(i).toInt(); }
+//      else if (param_number==53) { conf.timeoutrem = server.arg(i).toInt(); }
+//      else if (param_number==54) { conf.timeoutNTP = server.arg(i).toInt(); }
       else if (param_number==56) { conf.canalAP = server.arg(i).toInt()+1; }
       }
     //
@@ -3273,7 +3260,7 @@ void ICACHE_FLASH_ATTR setupNetHTML()
   printP(c(Select_name),comillas);
   printIP(56, comillas);
   printP(mayor);
-  for (byte j = 0; j < 13; j++)   { // canales
+  for (byte j=0; j<13; j++)   { // canales
     pc(optionvalue);
     printPiP(comillas, j, comillas);
     if (conf.canalAP-1==j) printP(b, selected, ig, comillas, selected, comillas);
@@ -3285,10 +3272,10 @@ void ICACHE_FLASH_ATTR setupNetHTML()
   printP(tr);
   ccell(MAC);
   printP(td);
-  if (clientremote())  pc(hidden);
+  if (clientremote()) pc(hidden);
   else { for (byte i=0; i<5; i++) printP(conf.EEmac[i]); printP(conf.EEmac[5]);  }
   printP(td_f, tr_f);
-  printP(tr, td, t(staticip), td_f, conf.staticIP ? th : td);
+  printP(tr, td, t(staticip), td_f, conf.staticIP?th:td);
   checkBox(46,conf.staticIP,false);
   printP(conf.staticIP?th_f:td_f,tr_f);
 

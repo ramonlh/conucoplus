@@ -126,7 +126,8 @@ void initDS18B20()
 void leerConf()
 {
   if (readconf()<sizeof(conf)) saveconf();
-  if ((conf.netseg==0) || (conf.netseg==255)) conf.netseg=1;      // provisional
+  if ((conf.netseg==0) || (conf.netseg==255)) conf.netseg=1;      // por seguridad
+  strcat(hostraiz,itoa(conf.netseg,buff,10));strcat(hostraiz,punto);
 }
 
 void initWiFi()
