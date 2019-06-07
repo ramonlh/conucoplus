@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct {byte pro[6]; unsigned long code[6]; int len[6];} rftype;   // 42 bytes
 typedef struct {byte proon[18]; unsigned long codeon[18]; int lenon[18]; byte prooff[18]; unsigned long codeoff[18]; int lenoff[18];} code433type;   // 252 bytes
@@ -144,6 +143,7 @@ char host[16]="";
 char hostraiz[16]="192.168.";
 char conucochar[7]="conuco";
 char idmyjsontemp[10]="";
+int tiporemotetemp=8266;
 char aliasdevicetemp[20]="";
 char ssidSTAtemp[20]="";
 char passSTAtemp[20]="";

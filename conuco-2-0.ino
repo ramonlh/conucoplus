@@ -159,7 +159,8 @@ void initWiFi()
       WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2); 
       }
     dPrint(crlf);
-    WiFi.begin(conf.ssidSTA, conf.passSTA, true);
+//    WiFi.begin(conf.ssidSTA, conf.passSTA, true);
+    WiFi.begin(conf.ssidSTA, conf.passSTA);
     if (debugwifi) Serial.setDebugOutput(true);
     byte cont=0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
@@ -167,6 +168,8 @@ void initWiFi()
     dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected()?ok:c(terror)); dPrint(crlf);
     dPrint(c(tIP)); dPrint(dp); Serial.print(WiFi.localIP()); dPrint(crlf);
     dPrint(c(tport)); dPrint(dp); Serial.print(88); dPrint(crlf);
+    dPrint("GW"); dPrint(dp); Serial.print(WiFi.gatewayIP()); dPrint(crlf);
+    dPrint("mask"); dPrint(dp); Serial.print(WiFi.subnetMask()); dPrint(crlf);
     dPrint(c(thost)); dPrint(WiFi.hostname()); dPrint(crlf);
     }
 }
@@ -395,6 +398,7 @@ void task1()      // 1 segundo
   oled.setTextXY(4,3); oled.putNumber(minute()); oled.putChar(':');   // minutos
   oled.setTextXY(4,6); oled.putNumber(second());                      // segundos
   mact1 = millis();
+  }
 }
 
 //class myMQTTBroker: public uMQTTBroker

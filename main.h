@@ -676,7 +676,7 @@ void ICACHE_FLASH_ATTR onescena(byte nesc)
         if (getbit8(conf.bescenaact[nesc], i + 2) == 1)
           {
           byte auxest = getbit8(conf.bescena[nesc], i + 2);
-auxerr = pinvalR(conf.idsalremote[i], 88, conf.senalrem[i]-6, auxest);
+          auxerr = pinvalR(conf.idsalremote[i], 88, conf.senalrem[i]-6, auxest);
           if ((auxerr == 200) || (auxerr == 303) || (auxerr == (-11))) {
             setbit8(bstatremote, i, auxest);
             contaremote[i] = 0;  }
@@ -1370,6 +1370,113 @@ void ICACHE_FLASH_ATTR seleccionatipoi2cmb(byte i)
   pc(select_f);
 }
 
+void ICACHE_FLASH_ATTR extraevaloresTempConf(boolean withpass)
+{                       // extrae datos de json.conf
+  if (withpass)
+    {
+    extrae(true, msg, PSTR("ss")).toCharArray(ssidSTAtemp, 20);
+    extrae(true, msg, PSTR("ps")).toCharArray(passSTAtemp, 20);
+    }
+  tiporemotetemp = extrae(false, msg, PSTR("m")).toInt();
+  iddevicetemp = extrae(false, msg, PSTR("DV")).toInt();
+  versinsttemp = extrae(false, msg, PSTR("v")).toInt();
+  actualizauttemp = extrae(false, msg, PSTR("aa")).toInt();
+  extrae(true, msg, PSTR("al")).toCharArray(aliasdevicetemp, 20);
+  iftttenabletemp = extrae(false, msg, PSTR("if")).toInt();
+  extrae(true, msg, PSTR("k")).toCharArray(iftttkeytemp, 30);
+  mododweettemp = extrae(false, msg, PSTR("dw")).toInt();
+  modomyjsontemp = extrae(false, msg, PSTR("my")).toInt();
+  extrae(true, msg, PSTR("MJ")).toCharArray(idmyjsontemp, 10);
+  modo45temp = extrae(false, msg, PSTR( "m45")).toInt();
+  peractpantemp = extrae(false, msg, PSTR( "pap")).toInt();
+  peractremtemp = extrae(false, msg, PSTR( "par")).toInt();
+  TempDesactPrgtemp = extrae(false, msg, PSTR("tdp")).toInt();
+  iottweetenabletemp = extrae(false, msg, PSTR("iot")).toInt();
+  extrae(true, msg, PSTR("iotu")).toCharArray(iottweetusertemp, 10);
+  extrae(true, msg, PSTR("iotk")).toCharArray(iottweetkeytemp, 15);
+  latitudtemp = extrae(true, msg, PSTR("lat")).toFloat();
+  longitudtemp = extrae(true, msg, PSTR("lon")).toFloat();
+  for (byte i=0;i<3;i++) { extrae(true,msg,idpin[i]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i,20); }
+  extrae(true, msg, PSTR("a0")).toCharArray(auxdesc, 20); savedescr(filedesctemp, auxdesc, 3, 20);
+  extrae(true, msg, PSTR("au0")).toCharArray(unitpinAtemp, 4);
+  for (byte i=0;i<2;i++) { extrae(true,msg,idpin[i+4]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i+4,20); }
+  for (byte i=0;i<2;i++) { extrae(true,msg,idpin[i+6]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i+6,20); }
+  factorAtemp[0] = extrae(true, msg, PSTR("af0")).toFloat();
+  offsetAtemp[0] = extrae(true, msg, PSTR("ao0")).toFloat();
+  bsumatAtemp[0] = extrae(true, msg, PSTR("asu0")).toInt();
+  tipoEDtemp[0] = extrae(true, msg, PSTR("et0")).toInt();
+  tipoEDtemp[1] = extrae(true, msg, PSTR("et1")).toInt();
+  valinictemp[0] = extrae(false, msg, PSTR( "vi0")).toInt();
+  valinictemp[1] = extrae(false, msg, PSTR("vi1")).toInt();
+  tempdefacttemp[0] = extrae(false, msg, PSTR("on0")).toInt();
+  tempdefacttemp[1] = extrae(false, msg, PSTR("on1")).toInt();
+  tempdefdestemp[0] = extrae(false, msg, PSTR("off0")).toInt();
+  tempdefdestemp[1] = extrae(false, msg, PSTR("off1")).toInt();
+  iftttpinEDtemp[0] = extrae(false, msg, PSTR("ife0")).toInt();
+  iftttpinEDtemp[1] = extrae(false, msg, PSTR("ife1")).toInt();
+  iftttpinSDtemp[0] = extrae(false, msg, PSTR("ifs0")).toInt();
+  iftttpinSDtemp[1] = extrae(false, msg, PSTR("ifs1")).toInt();
+  extrae(true, msg, PSTR("fsv")).toCharArray(fwUrlBasetemp, 80);
+  clearmsg();
+}
+void addsignal(byte n)    // n de 0 a 7, es la señal del remoto que hay que añadir a ñas señales remotas del master
+{
+  Serial.println("addsignal"); 
+  Serial.print("n:"); Serial.print(n);
+  Serial.print(" iddevicetemp:"); Serial.print(iddevicetemp);
+  Serial.print(" tiporemotetemp:"); Serial.print(tiporemotetemp);
+  Serial.print(" idpin[n]:"); Serial.print(idpin[n]);
+  Serial.println();
+  byte i=0;
+  boolean hayhueco=false;
+  boolean existe=false;
+  while ((i<maxsalrem) and (!hayhueco) && (!existe))
+    {
+    hayhueco=(conf.idsalremote[i]==0);  
+    existe=((conf.idsalremote[i]==iddevicetemp) && (conf.senalrem[i]==n));
+    if (!hayhueco) i++;
+    }
+  if (hayhueco)
+    {
+    conf.idsalremote[i]=iddevicetemp;
+    conf.senalrem[i]=n;
+    Serial.print("i:"); Serial.print(i);
+    Serial.print(" conf.idsalremote[i]:"); Serial.print(conf.idsalremote[i]);
+    Serial.print(" conf.senalrem[i]:"); Serial.print(conf.senalrem[i]);
+      readdescr(filedesctemp,n,20);
+      savedescr(filesalrem,auxdesc,i,20);
+    Serial.print(" auxdesc:"); Serial.println(auxdesc);
+    }
+}
+
+void scanremotes()
+{
+  byte k=0;   // señales remotas añadidas
+  for (byte i=150;i<166;i++)    // busca dispositivos
+    {
+    if (i!=conf.iddevice)
+      {
+      boolean encontrado=false;
+      int auxerr=ReqJsonConf(i, 88);
+      if (auxerr==HTTP_CODE_OK) 
+        {
+        extraevaloresTempConf(true);
+        if (tiporemotetemp==8266)
+          {
+          byte j=0;
+          while ((j<maxdevrem) && (conf.idremote[j]>0) && (!encontrado))
+            {
+            encontrado=(conf.idremote[j]==i);
+            if (!encontrado) j++;
+            }
+          if (j<16) {if (!encontrado) { conf.idremote[j]=i; } savedescr(filedevrem, aliasdevicetemp, j, 20);  }
+          }
+        }
+      clearmsg();
+      }
+    }
+}
+
 void ICACHE_FLASH_ATTR setupremHTML()
 {
   printremote();
@@ -1396,6 +1503,7 @@ void ICACHE_FLASH_ATTR setupremHTML()
     }
   // headers
   if (server.args()>0) { posactrem = constrain(server.arg(0).toInt(), 0, 15); }
+  if (server.args()>1) { if (server.arg(1).toInt()==1) { scanremotes();  }  }
   writeHeader(false,false);
   writeMenu(3, 10);
   writeForm(slkhtm);
@@ -1488,7 +1596,11 @@ void ICACHE_FLASH_ATTR setupremHTML()
     }
   printP(tr);
   printColspan(4);
-  printP(t(pietiporem), td_f, tr_f);
+  printP(t(pietiporem));
+  ///////////////////
+  printP(href_i,"\"sr?p=0&m=1\"> Scan",href_f);
+  //////////////////
+  printP(td_f,tr_f);
   writeFooter(guardar, false);
   serversend200();
 }
@@ -1542,7 +1654,7 @@ void ICACHE_FLASH_ATTR setupsalremHTML()
   printP(table, b);
   printP(c(tclass), ig, tnormal, mayor);
 
-  if (prisalrem > 0)
+  if (prisalrem > 0)      // link para retroceder
     {
     printP(tr);
     printColspan(4);
@@ -1571,7 +1683,7 @@ void ICACHE_FLASH_ATTR setupsalremHTML()
       printP(mayor);
       pc(optionvalue);
       printPiP(comillas, 0, comillas);
-      if (conf.idsalremote[i] == 0) printP(b, selected, ig, comillas, selected, comillas);
+      if (conf.idsalremote[i]==0) printP(b, selected, ig, comillas, selected, comillas);
       printPiP(mayor, 0, c(option_f));
       for (byte j = 0; j < maxdevrem; j++)  { // añade remotos
         if (conf.idremote[j] > 0) {
@@ -1649,7 +1761,7 @@ void ICACHE_FLASH_ATTR setupsalremHTML()
       }
     printP(tr_f);
     }
-  if (maxsalrem-prisalrem-8>0)
+  if (maxsalrem-prisalrem-8>0)    // link para avanzar
    {
     printP(tr);
     printColspan(4);
@@ -2478,56 +2590,6 @@ void ICACHE_FLASH_ATTR downloadHTML() {
   }
 }
 
-void ICACHE_FLASH_ATTR extraevaloresTempConf(boolean withpass)
-{                       // extrae datos de json.conf
-  
-  if (withpass)
-    {
-    extrae(true, msg, PSTR("ss")).toCharArray(ssidSTAtemp, 20);
-    extrae(true, msg, PSTR("ps")).toCharArray(passSTAtemp, 20);
-    }
-  iddevicetemp = extrae(false, msg, PSTR("DV")).toInt();
-  versinsttemp = extrae(false, msg, PSTR("v")).toInt();
-  actualizauttemp = extrae(false, msg, PSTR("aa")).toInt();
-  extrae(true, msg, PSTR("al")).toCharArray(aliasdevicetemp, 20);
-  iftttenabletemp = extrae(false, msg, PSTR("if")).toInt();
-  extrae(true, msg, PSTR("k")).toCharArray(iftttkeytemp, 30);
-  mododweettemp = extrae(false, msg, PSTR("dw")).toInt();
-  modomyjsontemp = extrae(false, msg, PSTR("my")).toInt();
-  extrae(true, msg, PSTR("MJ")).toCharArray(idmyjsontemp, 10);
-  modo45temp = extrae(false, msg, PSTR( "m45")).toInt();
-  peractpantemp = extrae(false, msg, PSTR( "pap")).toInt();
-  peractremtemp = extrae(false, msg, PSTR( "par")).toInt();
-  TempDesactPrgtemp = extrae(false, msg, PSTR("tdp")).toInt();
-  iottweetenabletemp = extrae(false, msg, PSTR("iot")).toInt();
-  extrae(true, msg, PSTR("iotu")).toCharArray(iottweetusertemp, 10);
-  extrae(true, msg, PSTR("iotk")).toCharArray(iottweetkeytemp, 15);
-  latitudtemp = extrae(true, msg, PSTR("lat")).toFloat();
-  longitudtemp = extrae(true, msg, PSTR("lon")).toFloat();
-  for (byte i=0;i<3;i++) { extrae(true,msg,idpin[i]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i,20); }
-  extrae(true, msg, PSTR("a0")).toCharArray(auxdesc, 20); savedescr(filedesctemp, auxdesc, 3, 20);
-  extrae(true, msg, PSTR("au0")).toCharArray(unitpinAtemp, 4);
-  for (byte i=0;i<2;i++) { extrae(true,msg,idpin[i+4]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i+4,20); }
-  for (byte i=0;i<2;i++) { extrae(true,msg,idpin[i+6]).toCharArray(auxdesc,20); savedescr(filedesctemp,auxdesc,i+6,20); }
-  factorAtemp[0] = extrae(true, msg, PSTR("af0")).toFloat();
-  offsetAtemp[0] = extrae(true, msg, PSTR("ao0")).toFloat();
-  bsumatAtemp[0] = extrae(true, msg, PSTR("asu0")).toInt();
-  tipoEDtemp[0] = extrae(true, msg, PSTR("et0")).toInt();
-  tipoEDtemp[1] = extrae(true, msg, PSTR("et1")).toInt();
-  valinictemp[0] = extrae(false, msg, PSTR( "vi0")).toInt();
-  valinictemp[1] = extrae(false, msg, PSTR("vi1")).toInt();
-  tempdefacttemp[0] = extrae(false, msg, PSTR("on0")).toInt();
-  tempdefacttemp[1] = extrae(false, msg, PSTR("on1")).toInt();
-  tempdefdestemp[0] = extrae(false, msg, PSTR("off0")).toInt();
-  tempdefdestemp[1] = extrae(false, msg, PSTR("off1")).toInt();
-  iftttpinEDtemp[0] = extrae(false, msg, PSTR("ife0")).toInt();
-  iftttpinEDtemp[1] = extrae(false, msg, PSTR("ife1")).toInt();
-  iftttpinSDtemp[0] = extrae(false, msg, PSTR("ifs0")).toInt();
-  iftttpinSDtemp[1] = extrae(false, msg, PSTR("ifs1")).toInt();
-  extrae(true, msg, PSTR("fsv")).toCharArray(fwUrlBasetemp, 80);
-  clearmsg();
-}
-
 void ICACHE_FLASH_ATTR setupdev150HTML()
 {
   printremote();
@@ -2662,9 +2724,9 @@ void ICACHE_FLASH_ATTR setupDevRemHTML()
   byte posdevice = 99;
   if (auxerr==HTTP_CODE_OK) {
     extraevaloresTempConf(false);
-    for (byte i = 0; i < maxdevrem; i++)  {
-      if (conf.idremote[i] == iddevicetemp) posdevice = i;
-      if (posdevice != 99) {
+    for (byte i=0;i<maxdevrem; i++)  {
+      if (conf.idremote[i]==iddevicetemp) posdevice=i;
+      if (posdevice!=99) {
         strcpy(auxdesc, aliasdevicetemp);  savedescr(filedevrem, auxdesc, posdevice, 20);
         for (byte j = 0; j < maxsalrem; j++)       {
           if (conf.idsalremote[j] == conf.idremote[posdevice])
@@ -2865,12 +2927,9 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
     sendOther(auxchar,-1);   // "sdrem?rem=xxx";
     return;
     }
-//    sendJsonConf(iddevicetemp, 88, false, false); // envia jsonConf al remoto para configurar
-//    strcpy(auxchar, sdremhtm);  strcat(auxchar, interr); strcat(auxchar, c(trem)); strcat(auxchar, itoa(iddevicetemp, buff, 10));
-//    sendOther(auxchar,-1);
-//    return;
 
-  if (server.args()>1) { priremio = constrain(server.arg(1).toInt(),0,7); }
+  if (server.args()>1) { priremio=constrain(server.arg(1).toInt(),0,7); }
+  if (server.args()>2) { if (server.arg(2).toInt()==1) { addsignal(priremio);  }  }
   writeHeader(false,false);
   writeMenu(3, 5);
   writeForm(sdremiohtm);
@@ -2896,9 +2955,16 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
       printP(tr);
       if (priremio==i)    // sondas
         {
-        printP(td, t(sonda), b);
+        printP(td,href_i,"\"sdrio?rem=");
+        printI(iddevicetemp);
+        printP("&p=");
+        printI(i);
+        printP("&m=1\">", t(sonda));
         printI(i+1);
-        printP(td_f,td); 
+        printP(href_f,td_f);
+//        printP(td, t(sonda), b);   printI(i+1);   printP(td_f); 
+
+        printP(td);
         printP(menor, c(tinput), b, type, ig);
         printP(comillas, c(ttext), comillas, b);
         printP(c(namet), ig);
@@ -2924,7 +2990,12 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
 
     if (priremio==3)    // entrada analógica   
       {
-      printP(tr, td, t(entanalog),td_f);
+        printP(td,href_i,"\"sdrio?rem=");
+        printI(iddevicetemp);
+        printP("&p=");
+        printI(3);
+        printP("&m=1\">", t(entanalog));
+        printP(href_f,td_f);
       printP(td,menor, c(tinput), b, type, ig);
       printP(comillas, c(ttext), comillas, b);
       printP(c(namet), ig);
@@ -2982,9 +3053,16 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
         { 
         if (modo45temp==0)
           {
-          printP(tr, td, t(entradasdig), b);
+          printP(tr);
+          printP(td,href_i,"\"sdrio?rem=");
+          printI(iddevicetemp);
+          printP("&p=");
+          printI(i+4);
+          printP("&m=1\">", t(entradasdig));
           printI(i+1);
-          printP(td_f, td);
+          printP(href_f,td_f);
+          
+          printP(td);
           printP(menor, c(tinput), b, type, ig, comillas);
           printP(c(ttext), comillas, b);
           printP(c(namet), ig, comillas);
@@ -3040,10 +3118,15 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
       {
       if (priremio==i+6) 
         {
-        printP(tr, td, t(saldig));
+        printP(tr);
+        printP(td,href_i,"\"sdrio?rem=");
+        printI(iddevicetemp);
+        printP("&p=");
+        printI(i+6);
+        printP("&m=1\">", t(saldig));
         printI(i+1);
-        printP(td_f, td);
-  
+        printP(href_f,td_f);
+        printP(td);
         printP(menor, c(tinput), b, type, ig, comillas);
         printP(c(ttext), comillas, b);
         printP(c(namet), ig, comillas);
