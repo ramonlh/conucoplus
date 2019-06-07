@@ -31,7 +31,7 @@ Ent.
 Ent. Analog.                            
 Ent. Dig.                               
 Entrada                                 
-Error comm.                             
+Error comm. REFRESH PAGE                
 Escena                                  
 Escenas                                 
 Estado                                  
