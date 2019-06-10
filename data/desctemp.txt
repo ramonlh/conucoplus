@@ -1,1 +1,1 @@
-Temp. Cuarto Estar Sonda 2             Sonda 3             Ent. Analog.        Ent. Dig. 1         Ent. Dig. 2         Sal. dig. 1         Sal. dig. 2               
+Sonda 1            Sonda 2             Sonda 3             Ent. Analog.        Ent. Dig. 1         Ent. Dig. 2         Sal. dig. 1         Sal. dig. 2               
