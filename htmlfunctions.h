@@ -275,13 +275,13 @@ void ICACHE_FLASH_ATTR HtmlGetStateTime()
 {
   printColspan(2);
   printTime();
-  printP(b, c(PRG), b, (countfaulttime < conf.TempDesactPrg) ? ON : OFF, b);
+  printP(b, c(PRG), b, (countfaulttime<conf.TempDesactPrg)?ON:OFF,b);
   printI(ESP.getFreeHeap());
   printP(td_f);
 }
 
 char* ICACHE_FLASH_ATTR textonoff(float valor)
-{ if (valor==1) return "ON"; else return "OFF";  }
+{ if (valor==1) return (char *)"ON"; else return (char *)"OFF";  }
 
 void ICACHE_FLASH_ATTR writeForm(PGM_P phtm)
 {

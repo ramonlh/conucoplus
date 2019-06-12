@@ -18,6 +18,7 @@
 #define maxwebcalls 4   // número máximo de web calls
 #define maxparam 14     // número máximo parámetros LCD
 #define maxpaneles 10   // número máximo de paneles
+#define maxsinput 50    // tamaño de comando por puerto serie
 ///////////////////////////////////////////////////////////////////////////////
 #define baseAna 3
 #define nEVE 8          // número de eventos

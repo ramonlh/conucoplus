@@ -22,16 +22,17 @@ void ICACHE_FLASH_ATTR filesHTML()
     printP(t(useftp),crlf);
   printP(menor,table, b);
   printP(c(tclass), ig, tnormal, mayor);
-  Dir dir = SPIFFS.openDir("/");
+  Dir dir=SPIFFS.openDir("/");
   while (dir.next())   {
-    File f=dir.openFile(letrar);
+    int auxI=0;
+    if (dir.fileName()!=(String)"/msg.txt") { File f=dir.openFile(letrar); auxI=f.size();  f.close();  }
     printP(tr, td, href_i, comillas, letrad, letraw);
     printP(interr, letraf, ig);
     printS(dir.fileName());
     printP(comillas, mayor);
     printS(dir.fileName());
     printP(href_f, td_f, td);
-    printI(f.size());
+    printI(auxI);
     printP(td_f, tr_f);
     }
   printP(menor, barra, table, mayor);  

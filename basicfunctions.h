@@ -21,9 +21,8 @@ template <class T> int EEPROM_readAnything(int ee, T& value)
 void clearmsg()
 {
   msg=vacio;
-  fmsg=SPIFFS.open(filemsg,"w");
-  if (fmsg) fmsg.close();
-  fmsg=SPIFFS.open(filemsg,"a+");
+  if (fmsg) { fmsg.close();  fmsg=SPIFFS.open(filemsg,"a"); }
+  else fmsg=SPIFFS.open(filemsg,"w");
 }
 
 boolean strcharcomp() { msg.toLowerCase(); msg.toCharArray(auxdesc, msg.length()+1); return (strcmp(auxchar,auxdesc)==0); }
@@ -147,7 +146,8 @@ String ICACHE_FLASH_ATTR extrae(boolean eschar, String cad, String subcad)
 
 char* ICACHE_FLASH_ATTR ftoa(int valor, int dec)
 {  
-  char buff1[10],buff2[10];
+  static char buff1[10];
+  char buff2[10];
   itoa(valor/10,buff1,10);
   itoa(valor%10,buff2,10);
   strcat(buff1,".");
@@ -156,8 +156,7 @@ char* ICACHE_FLASH_ATTR ftoa(int valor, int dec)
 }  
 
 void ICACHE_FLASH_ATTR tictac(int pin, int n, int delayed)
-  { for (int i=0;i<n;i++) 
-    {digitalWrite(pin,1); delay(delayed); digitalWrite(pin, 0); delay(delayed);} }
+  { for (int i=0;i<n;i++) {digitalWrite(pin,1); delay(delayed); digitalWrite(pin, 0); delay(delayed);} }
 
 void ICACHE_FLASH_ATTR printconceros(int value)  { Serial.print(value<10?0:value); }
 
@@ -194,8 +193,7 @@ void ICACHE_FLASH_ATTR printlinea(PGM_P texto) { for (byte i=0;i<20;i++) Serial.
 
 void ICACHE_FLASH_ATTR createhost(byte ip)
 {
-  strcpy(host,hostraiz); 
-  strcat(host, itoa(ip, buff, 10));
+  strcpy(host,hostraiz); strcat(host, itoa(ip, buff, 10));
 }
 
 void calcindices(int i)
@@ -220,7 +218,8 @@ int callhttpGET(char *host, int port, boolean readresp, unsigned long timeout)
 }
 
 boolean checkfile(char* namefile)
-{  if (!SPIFFS.exists(namefile)) { Serial.print(namefile); Serial.println(" no existe"); return false; }  return true; }
+{  if (!SPIFFS.exists(namefile)) 
+  { Serial.print(namefile); Serial.println(PSTR(" no existe")); return false; }  return true; }
 
 boolean checkfiles()
 {
@@ -430,9 +429,9 @@ void ICACHE_FLASH_ATTR serversend200()
 { 
   fmsg.close();   // cierra fichero que estaba en escritura
   fmsg=SPIFFS.open(filemsg,"r");
-  int nsend=fmsg.size();
   if (fmsg)  
     {
+    int nsend=fmsg.size();
     server.setContentLength(nsend);
     server.send(200,texthtml,vacio);  // no se envía nada
     for (int i=0;i<nsend/bufsizechar;i++) 
@@ -442,7 +441,7 @@ void ICACHE_FLASH_ATTR serversend200()
       server.sendContent(String(auxchar));
       }
     // resto 
-    fmsg.readBytes(auxchar,nsend%130);
+    fmsg.readBytes(auxchar,nsend%bufsizechar);
     auxchar[nsend%bufsizechar]='\0';
     server.sendContent(String(auxchar));
     fmsg.close();

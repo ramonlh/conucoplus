@@ -526,7 +526,7 @@ void ICACHE_FLASH_ATTR loginHTML()
   printP(menor,table,b);
   printP(c(tclass), ig, tnormal, mayor);
   printparCP(t(usuario), 0, conf.userDev, 20, false);
-  printparCP(t(contrasena), 1, "", 20, true);
+  printparCP(t(contrasena), 1, (char *)"", 20, true);
   printP(menor, barra, table, mayor);
   printP(menor, c(tinput), b, type, ig, comillas);
   printP(submit, comillas, b, tvalue, ig, comillas);
@@ -552,7 +552,7 @@ int ICACHE_FLASH_ATTR getdweet(char* key)
   if (conf.mododweet==0) return 0;
   clearmsg();
   msg+=c(getlastdweett); msg+=conucochar;msg+=key;
-  return callhttpGET("Dweet.io",80,true,conf.timeoutNTP);
+  return callhttpGET((char *)"Dweet.io",80,true,conf.timeoutNTP);
 }
 
 int ICACHE_FLASH_ATTR postIoTweet()
@@ -628,7 +628,7 @@ int ICACHE_FLASH_ATTR checkMyIP()
   if (strcmp(conf.myippub, auxip) != 0) // son diferentes
     {
     saveconf();
-    if (conf.iftttenable) ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, "NewIP", conf.myippub);
+    if (conf.iftttenable) ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, (char *)"NewIP", conf.myippub);
     }
 }
 
@@ -763,8 +763,7 @@ void procesaeventos()
             if (conf.iftttenable) 
               if (getbit8(bevenENABLE[0],i)==1)
                 {
-                Serial.println("IFTTT dig sent");
-                if (ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, itoa(conf.condact[i],buff,10), "testdig")==200)
+                if (ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, itoa(conf.condact[i],buff,10), (char *)"testdig")==200)
                   { setbit8(bevenENABLE[0],i,0);  }
                 }
             }
@@ -809,8 +808,7 @@ void procesaeventos()
               if (conf.iftttenable) 
                 if (getbit8(bevenENABLE[1],i)==1)
                   {
-                  Serial.println("IFTTT ana sent");
-                  if(ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, itoa(conf.condact[i],buff,10), "testana")==200)
+                  if(ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, itoa(conf.condact[i],buff,10), (char *)"testana")==200)
                     { setbit8(bevenENABLE[1],i,0); }
                   }
              }
@@ -2523,7 +2521,8 @@ void ICACHE_FLASH_ATTR setuprfHTML()
 
   espacioSep(4);
   for (byte i=0;i<2;i++) { lineasetuprfonoff(false,i,readdescr(filedesclocal,i+6,20));  }
-  for (byte i=0; i<maxsalrem; i++) 
+  for (byte i=0; i<16; i++) 
+//  for (byte i=0; i<maxsalrem; i++) 
     if (conf.idsalremote[i]!=0) 
       if (conf.senalrem[i]>=6) { lineasetuprfonoff(true, i,readdescr(filesalrem,i,20)); }
   writeFooter(guardar, false);
@@ -2588,91 +2587,49 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
     sendOther(slkhtm,-1);
     for (byte i = 0; i<server.args(); i++)
       {
-      if (server.argName(i).toInt()==0) iddevicetemp = server.arg(i).toInt();
-      if (server.argName(i).toInt()==1) server.arg(i).toCharArray(aliasdevicetemp, sizeof(aliasdevicetemp));
-      if (server.argName(i).toInt()==2) server.arg(i).toCharArray(ssidSTAtemp, sizeof(ssidSTAtemp));
-      if (server.argName(i).toInt()==3) server.arg(i).toCharArray(passSTAtemp, sizeof(passSTAtemp));
-      if (server.argName(i).toInt()==4) wifimodetemp=server.arg(i).toInt();
-      if (server.argName(i).toInt()==5) hacerresetrem=server.arg(i).toInt();
+      if (server.argName(i).toInt()==0) server.arg(i).toCharArray(instnametemp, sizeof(instnametemp));
+      else if (server.argName(i).toInt()==1) server.arg(i).toCharArray(aliasdevicetemp, sizeof(aliasdevicetemp));
+      else if (server.argName(i).toInt()==2) iddevicetemp = server.arg(i).toInt();
+      else if (server.argName(i).toInt()==3) server.arg(i).toCharArray(ssidSTAtemp, sizeof(ssidSTAtemp));
+      else if (server.argName(i).toInt()==4) server.arg(i).toCharArray(passSTAtemp, sizeof(passSTAtemp));
+      else if (server.argName(i).toInt()==5) hacerresetrem=server.arg(i).toInt();
       }
     /////////////////////////////////
-    // conectar a red conuco150del nuevo AP
+    // conectar a red conuco150 del nuevo AP
     conf.staticIP=1;
     conf.EEip= {192,168,4,9}; conf.EEip[3]=9;
     conf.EEgw={192,168,4,1};
     WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
     WiFi.begin("CONUCO_150", t12341234, true);
-    byte cont = 0;
+    byte cont=0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
     while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto);  }
     dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected() ? ok : c(terror)); dPrint(crlf);
-    dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
+    dPrint(c(tIP)); dPrint(b); Serial.print(WiFi.localIP()); dPrint(crlf);
 
     if (WiFi.isConnected())
       {
+      Serial.println("Conectado al 150");
       // enviar nuevos datos
-      sendJsonConf(1, 88, true, hacerresetrem == 1); // envia jsonConf al remoto para configurar y guardar, incluído ssid y pass
-      hacerresetrem = 0;
+//      sendJsonConf(1, 88, true, hacerresetrem == 1); // envia jsonConf al remoto para configurar y guardar, incluído ssid y pass
+//      hacerresetrem = 0;
       }
     else
       {Serial.print(t(NO)); Serial.print(b);Serial.print(t(tconectado));}
     // volver a red original
-    conf.EEip={192,168,1,150};  conf.EEip[3] = conf.iddevice;
-    conf.EEgw={192,168,1,1};
+    conf.EEip={192,168,1,150}; conf.EEip[2]=conf.netseg; conf.EEip[3]=conf.iddevice;
+    conf.EEgw={192,168,1,1}; conf.EEgw[2]=conf.netseg;
     WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
     WiFi.begin(conf.ssidSTA, conf.passSTA, true);
-    cont = 0;
+    cont=0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
     while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto); }
     dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected() ? ok : c(terror)); dPrint(crlf);
-    dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
+    dPrint(c(tIP)); dPrint(b); Serial.print(WiFi.localIP()); dPrint(crlf);
     ////////////////////////////////
-    //    sendOther(sdrem150htm,-1);
-    sendOther(slkhtm,-1);
+    sendOther(sdrem150htm,-1);
     return;
     }
-
-  if (server.argName(0).compareTo(PSTR("r")) == 0)
-    if (server.arg(0).toInt() == 1)
-      {
-      /////////////////////////////////
-      // conectar a red conuco150
-      byte auxdevice = conf.iddevice;
-      conf.staticIP = 1;
-      conf.EEip = {192, 168, 4, 9};  conf.EEip[3] = 9;
-      conf.EEgw = {192, 168, 4, 1};
-      WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
-      WiFi.begin("CONUCO_150", t12341234, true);
-      byte cont = 0;
-      dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-      while ((!WiFi.isConnected()) && (cont++ < 20))  {delay(1000); dPrint(punto); }
-      dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected()?ok:c(terror)); dPrint(crlf);
-      dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
-
-      if (WiFi.isConnected())
-        {
-        int auxerr = 0;
-        auxerr = ReqJsonConf(1, 88);
-        Serial.print(c(treqjson)); Serial.print(dp);  Serial.println(auxerr);
-        if (auxerr == HTTP_CODE_OK) extraevaloresTempConf(true);
-        clearmsg();
-        }
-      else { Serial.print(t(NO));  Serial.print(b); Serial.print(t(tconectado));  }
-      // volver a red original
-      conf.iddevice = auxdevice;
-      conf.EEip = {192, 168, 1, 150};  conf.EEip[3] = conf.iddevice;
-      conf.EEgw = {192, 168, 1, 1};
-      WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
-      WiFi.begin(conf.ssidSTA, conf.passSTA, true);
-      cont=0;
-      dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-      while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto); }
-      dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected()?ok:c(terror)); dPrint(crlf);
-      dPrint(c(tIP)); (WiFi.localIP()); dPrint(crlf);
-      ////////////////////////////////
-      sendOther(sdrem150htm,-1);
-      return;
-      }
 
   writeHeader(false,false);
   writeMenu(3, 5);
@@ -2680,20 +2637,24 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
   printP(tr);
   printColspan(2);
   printP(t(nuevoremoto), td_f, tr_f);
-  printP(tr, td, t(dispositivo), td_f);
-  printcampoL(0, iddevicetemp, 3, true,true);  
+  printP(tr);
+  tcell(instalacion);
+  printcampoC(0, instnametemp, 10, true, true, false,true);  
   printP(tr_f);
   printP(tr);
   ccell(alias);
   printcampoC(1, aliasdevicetemp, 20, true, true, false,true);  
   printP(tr_f);
+  printP(tr, td, t(dispositivo), td_f);
+  printcampoL(2, iddevicetemp, 3, true,true);  
+  printP(tr_f);
   printP(tr);
   ccell(tssid);
-  printcampoC(2, conf.ssidSTA, 20, true, true, false,true);  
+  printcampoC(3, conf.ssidSTA, 20, true, true, false,true);  
   printP(tr_f);
   printP(tr);
   ccell(tpass);
-  printcampoC(3, conf.passSTA, 20, true, true, true,true);  
+  printcampoC(4, conf.passSTA, 20, true, true, true,true);  
   printP(tr_f);
   printP(tr, td, treset, td_f);
   checkBox(5, hacerresetrem,true);  
@@ -3362,8 +3323,8 @@ void ICACHE_FLASH_ATTR setupSegHTML()
   checkBox(0, conf.usepassDev,false);
   if (conf.usepassDev) printP(th_f, tr_f); else printP(td_f, tr_f);
   printparCP(t(usuario), 1, conf.userDev, 20, false);
-  printparCP(t(contrasena), 2, "", 20, true);
-  printparCP(t(confcontrasena), 3, "", 20, true);
+  printparCP(t(contrasena), 2, (char *)"", 20, true);
+  printparCP(t(confcontrasena), 3, (char *)"", 20, true);
   writeFooter(guardar, false);
   serversend200();
 }
@@ -4203,7 +4164,7 @@ void initConf()
   memset(conf.code433.lenoff, 0, sizeof(conf.code433.lenoff));
   //////////////////////////////////////// DEVICE
   conf.iddevice=150;
-  strcpy(conf.aliasdevice, t(NUEVO));
+  strcpy(conf.aliasdevice, "NUEVO");
   conf.bestado=0;
   conf.valinic[0]=2; conf.valinic[1]=2;         // último valor como defecto
   conf.showN=0;
@@ -4225,7 +4186,7 @@ void initConf()
   conf.TempDesactPrg=600;                           // tiempo desactivación programas si falla la hora en segundos  
   memset(conf.contadores,0,sizeof(conf.contadores));// contadores de número de activaciones de entradas digitales
   conf.webPort=88;                                  // en initWiFi
-  memset(conf.bshowbypanel,0,sizeof(conf.bshowbypanel)); conf.bshowbypanel[0][0]=193;
+  memset(conf.bshowbypanel,0,sizeof(conf.bshowbypanel)); conf.bshowbypanel[0][0]=255;
   conf.wifimode=1;                                  // en initWifi, modo AP
   strcpy(conf.ssidSTA,"SSID_AP");
   strcpy(conf.passSTA,"PASS_AP");
@@ -4262,14 +4223,19 @@ void initConf()
   memset(conf.accsetpoint,0,sizeof(conf.accsetpoint));  // acción asociada al setpoint (0=OFF,1=ON,2=ninguna)
   conf.ftpenable=1;                         // FTP activado
   conf.lang=0;                              // español, por defecto
+  
   ///////////////////////////////////// REMOTOS
   memset(mbtemp, 0, sizeof(mbtemp));         // estado relés remotos modbus (1 bit cada uno);
   memset(mbcons, 0, sizeof(mbcons));         // estado relés remotos modbus (1 bit cada uno);
   memset(mbstatus, 0, sizeof(mbstatus));     // estado relés remotos modbus (1 bit cada uno);
   /////// mqtt
+  conf.mqttenable=0;
   strcpy(conf.mqttpath[0],c(conuco));
   strcpy(conf.mqttpath[1],conf.instname);
   strcpy(conf.mqttpath[2],itoa(conf.iddevice,buff,10));
+  strcpy(conf.mqttpath[3],"");strcpy(conf.mqttpath[4],"");strcpy(conf.mqttpath[5],"");
+  strcpy(conf.mqttserver, "");
+  memset(conf.tempmqtt,0,sizeof(conf.tempmqtt));
   
 }
 
@@ -4485,10 +4451,6 @@ void ICACHE_FLASH_ATTR checkForUpdates() {
   httpClient.end();
 }
 
-uint8_t portArray[] = {16, 5, 4, 0, 2, 14, 12, 13};
-//String portMap[] = {"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7"}; //for Wemos
-String portMap[] = {"GPIO16", "GPIO5", "GPIO4", "GPIO0", "GPIO2", "GPIO14", "GPIO12", "GPIO13"};
-
 void ICACHE_FLASH_ATTR check_if_exist_I2C() {
   byte error, address;
   int nDevices;
@@ -4515,18 +4477,6 @@ void ICACHE_FLASH_ATTR check_if_exist_I2C() {
   else
     printlinea(ig);
 }
-
-//void ICACHE_FLASH_ATTR scanPorts() {
-//  for (uint8_t i = 0; i < sizeof(portArray); i++) {
-//    for (uint8_t j = 0; j < sizeof(portArray); j++) {
-//      if (i != j){
-//        Serial.print("Scanning (SDA : SCL) - " + portMap[i] + " : " + portMap[j] + " - ");
-//        Wire.begin(portArray[i], portArray[j]);
-//        check_if_exist_I2C();
-//      }
-//    }
-//  }
-//}
 
 void ICACHE_FLASH_ATTR lcdshowstatus()
 {
@@ -4744,10 +4694,10 @@ void ICACHE_FLASH_ATTR procesaRF()
 
   i=0;
   encontrado=false;
-//  while ((i<18) && (!encontrado))
-  while (i<34)
+  while ((i<18) && (!encontrado))
+//  while (i<34)      // ¿porqué pondría 34? porque son 2 locales + 32 posibles remotas
     {
-    if (lastcode==conf.code433.codeon[i])   {
+    if (lastcode==conf.code433.codeon[i])   {     // codeon tiene 18 celdas
       encontrado=true;
       if (i<=1) {
         pinVAL (sdPin[i], 1, conf.iddevice);   }

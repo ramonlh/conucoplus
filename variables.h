@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct {byte pro[6]; unsigned long code[6]; int len[6];} rftype;   // 42 bytes
 typedef struct {byte proon[18]; unsigned long codeon[18]; int lenon[18]; byte prooff[18]; unsigned long codeoff[18]; int lenoff[18];} code433type;   // 252 bytes
+typedef struct {byte proon[34]; unsigned long codeon[34]; int lenon[34]; byte prooff[34]; unsigned long codeoff[34]; int lenoff[34];} code433type34;   // 476 bytes
 typedef struct {int devori; int actualizaut; float s[3];float a1; char ua1[4]; int di[2],ds[2]; 
                 long tdi[2],tdo[2]; char mac[13]; char idmyj[10]; float dhtdata[2][2]; } conucodata;
 typedef struct {    // datos configuración
@@ -109,11 +110,12 @@ typedef struct {    // datos configuración
                 byte MbC8[1]={0};                 // estado de ED y SD: 0:SD0, 1:SD1, 2:ED0, 3:ED1
                 byte ftpenable=1;                 // 0=disnable, 1=enable
                 byte lang=0;                      // 0=español, 1=inglés
-                byte mqttenable=1;                // activado MQTT por defecto 
+                byte mqttenable=0;                // desactivado MQTT por defecto 
                 char mqttserver[40]="broker.mqtt-dashboard.com";           // MQTT broker por defecto
                 char mqttpath[6][10]={"conuco","INSTAL","150","","",""};   // MQTT path por defecto
                 char instname[10]="INSTAL";       // nombre de la instalación
                 unsigned int tempmqtt[8]={0,0,0,0,0,0,0,0};  // período de envío mqtt para cada señal
+                code433type34 code433xxxx;
                } conftype;
 
 conftype conf;     
@@ -144,6 +146,7 @@ char hostraiz[16]="192.168.";
 char conucochar[7]="conuco";
 char idmyjsontemp[10]="";
 int tiporemotetemp=8266;
+char instnametemp[10]="";
 char aliasdevicetemp[20]="";
 char ssidSTAtemp[20]="";
 char passSTAtemp[20]="";
@@ -152,7 +155,7 @@ char iftttkeytemp[30]="";
 char admin[]="admin";
 char buff[20];                  // 20 bytes, auxiliar
 const int bufsizechar=130;
-char auxchar[bufsizechar];              // 130 bytes, auxiliar 
+char auxchar[bufsizechar];      // 130 bytes, auxiliar 
 char auxdesc[60];               // 60 bytes, auxiliar para lectura de descriptores de archivos
 char unitpinAtemp[4];           // 4 char, unidades entradas analógicas
 char iottweetusertemp[10];          //IoTtweet account user ID (6 digits, included zero pre-fix)
@@ -247,31 +250,35 @@ boolean bmp085enabled=false;
 conucodata datosremoto;
 
 boolean filesok=false;
-char filemsg[]="/msg.txt";
-char filehtmlhead[]="/head.txt";
 char fileajaxscript[]="/ajax.txt";
+char filecommon[]="/common.txt";
 char fileconf[]="/conf.txt";
-char filezonas[]="/zonas.txt";
-char filedevrem[]="/devrem.txt";
-char filesalrem[]="/salrem.txt";
-char filewebcall[]="/webcall.txt";
-char fileurlwebcall[]="/urlwebcall.txt";
-char filedescprg[]="/descprg.txt";
+char filedash[]="/dash.txt";
 char filedescesc[]="/descesc.txt";
-char filemacdevrem[]="/macdevrem.txt";
+char filedesclocal[]="/desclocal.txt";
+char filedescprg[]="/descprg.txt";
+char filedesctemp[]="/desctemp.txt";
+char filedevrem[]="/devrem.txt";
+char fileenglish[]="/english.txt";
+char filehtmlhead[]="/head.txt";
+char filei2ctypes[]="/i2ctypes.txt";
 char fileidmyjsonrem[]="/idmyjsonrem.txt";
+char filemacdevrem[]="/macdevrem.txt";
+char filesalrem[]="/salrem.txt";
+char filespanish[]="/spanish.txt";
 char fileunitsalrem[]="/unitsalrem.txt";
 char fileurl[]="/url.txt";
-char filedesclocal[]="/desclocal.txt";
-char filedesctemp[]="/desctemp.txt";
-char filei2ctypes[]="/i2ctypes.txt";
-char filecommon[]="/common.txt";
-char filespanish[]="/spanish.txt";
-char fileenglish[]="/english.txt";
+char fileurlwebcall[]="/urlwebcall.txt";
+char filewebcall[]="/webcall.txt";
+char filezonas[]="/zonas.txt";
+
+char filemsg[]="/msg.txt";
 char filelog[]="/log.txt";
-char filedash[]="/dash.txt";
 
 unsigned long tini=0;
 String mqttclientID="";
 File fmsg;
+
+//char sinput[maxsinput]="";
+String sinput="";
 

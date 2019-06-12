@@ -319,7 +319,8 @@ void ICACHE_FLASH_ATTR parseJsonremoto()
   for (int j=0;j<maxsalrem;j++)
     {
     if (conf.idsalremote[j]>0)
-      if (conf.idsalremote[j]==datosremoto.devori)
+      {
+      if (conf.idsalremote[j]==datosremoto.devori)      // guarda valores de la señal remota
         {
         if (conf.senalrem[j]<=2) { sondaremote[j]=datosremoto.s[conf.senalrem[j]]; }// sondas remotas 1,2 y 3
         else if (conf.senalrem[j]==3) {sondaremote[j]=datosremoto.a1; strcpy(auxdesc,datosremoto.ua1); savedescr(fileunitsalrem,auxdesc, j,13); } // analógica
@@ -327,7 +328,11 @@ void ICACHE_FLASH_ATTR parseJsonremoto()
                                        tipoedremote[j]=datosremoto.di[conf.senalrem[j]-4];}
         else if (conf.senalrem[j]<=7) {setbit8(bstatremote, j, datosremoto.ds[conf.senalrem[j]-6]); contaremote[j]=datosremoto.tdo[conf.senalrem[j]-6];   }
         }
-    if (conf.idremote[j]==datosremoto.devori) { 
+      }
+    }
+  for (int j=0;j<maxdevrem;j++)
+    {
+    if (conf.idremote[j]==datosremoto.devori) {   
       strcpy(auxdesc,datosremoto.mac); savedescr(filemacdevrem,auxdesc, j,13); 
       strcpy(auxdesc,datosremoto.idmyj); savedescr(fileidmyjsonrem,auxdesc, j,10); }
     }

@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2002    // 
+#define versinst 2003    // 
 #define debug true
 #define debugwifi false
 
@@ -14,7 +14,6 @@ extern "C" {
 #include "commontexts.h"              // include
 #include <IoTtweet.h>                 // Local
 #include <ModbusMaster.h>             // Local
-//#include <SoftwareSerial.h>
 #include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>                // Local
@@ -100,8 +99,8 @@ void initSPIFFS()
   Serial.println(); Serial.println(t(files));
   Serial.print(c(tspiffs));Serial.print(b);
   if (SPIFFS.begin()) Serial.println(ok); else { Serial.println(c(terror)); ; return; }
-  Dir dir=SPIFFS.openDir(barra);
-  while (dir.next())  { Serial.print(dir.fileName()); Serial.print(b); File f=dir.openFile(letrar); Serial.println(f.size());  }
+//  Dir dir=SPIFFS.openDir(barra);
+//  while (dir.next())  { Serial.print(dir.fileName()); Serial.print(b); File f=dir.openFile(letrar); Serial.println(f.size());  }
 }
 void initFTP() {  ftpSrv.begin(conf.userDev,conf.passDev);  }
 void initDS18B20()
@@ -190,7 +189,7 @@ void initEntDig()
     Serial.print(c(tinput)); Serial.print(dp); Serial.println(c(modet));
     pinMode(edPin[0], INPUT_PULLUP);
     pinMode(edPin[1], INPUT_PULLUP);    
-    for (byte i=0;i<maxED;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i]);
+    for (byte i=0;i<maxED;i++) if (conf.tipoED[i]==2) dht[i].setup(edPin[i],DHTesp::DHT11);
     }
   else if (conf.modo45==1) {    // I2C
     Serial.print(i2c); Serial.print(b); Serial.println(c(modet));
@@ -318,7 +317,7 @@ void ICACHE_FLASH_ATTR setup(void) {
   dPrint(t(versiont)); dPrint(dp); dPrintI(versinst); dPrint(crlf);
   dPrint(c(runningt)); dPrint(crlf);
   printhora(); dPrint(crlf);
-
+  
 //  Serial.println("Starting MQTT broker");
 //  myBroker.init();
 //  myBroker.subscribe("#");
@@ -402,28 +401,6 @@ void task1()      // 1 segundo
   }
 }
 
-//class myMQTTBroker: public uMQTTBroker
-//{
-//public:
-//    virtual bool onConnect(IPAddress addr, uint16_t client_count) {
-//      Serial.println(addr.toString()+" connected");
-//      return true;
-//    }
-//    
-//    virtual bool onAuth(String username, String password) {
-//      Serial.println("Username/Password: "+username+"/"+password);
-//      return true;
-//    }
-//    
-//    virtual void onData(String topic, const char *data, uint32_t length) {
-//      char data_str[length+1];
-//      os_memcpy(data_str, data, length);
-//      data_str[length] = '\0';
-//      
-//      Serial.println("received topic '"+topic+"' with data '"+(String)data_str+"'");
-//    }
-//};
-
 void taskvar()
 {
 
@@ -483,12 +460,67 @@ void task3600()         // 3600 segundos=1 hora
   mact3600 = millis();
 }
 
+void execcom()
+{
+  String command, param;
+  command=sinput.substring(0,sinput.indexOf(","));
+  param=sinput.substring(sinput.indexOf(",")+1);
+//  Serial.print("comando/param: "); Serial.print(command);Serial.print("/");Serial.println(param);
+  if (command=="reset") ESP.restart();
+  else if (command=="files")  { Serial.print("files ");  Serial.println(checkfiles()?"OK":"ERROR");}
+  else if ((command=="help") || (command=="h"))
+    {   
+    Serial.println("reset");
+    Serial.println("files");
+    Serial.println("st");
+    Serial.println("id,iddevice");
+    Serial.println("alias,aliasdevice");
+    Serial.println("instal,instaldevice");
+    Serial.println("ssid,SSIDname");
+    Serial.println("pass,SSIDpass");
+    Serial.println("seg,segnet");
+    }
+  else if (command=="st")  
+    {   
+    Serial.print("DEV:"); Serial.println(conf.iddevice);
+    Serial.print("alias:"); Serial.println(conf.aliasdevice);
+    Serial.print("IP:"); Serial.println(WiFi.localIP());
+    Serial.print("mask:"); Serial.println(WiFi.subnetMask());
+    Serial.print("GW:"); Serial.println(WiFi.gatewayIP());
+//    Serial.print("SSID:"); Serial.println(WiFi.SSID());
+//    Serial.print("Pass:"); Serial.println(WiFi.psk());
+    Serial.print("SSID:"); Serial.println(conf.ssidSTA);
+    Serial.print("Pass:"); Serial.println(conf.passSTA);
+    Serial.print("Conn:"); Serial.println(WiFi.isConnected()?ok:c(terror));
+    Serial.println("Done");
+    }
+  else if (command=="id") { conf.iddevice=param.toInt(); conf.EEip[3]=conf.iddevice; param.toCharArray(conf.mqttpath[2],10); saveconf(); Serial.println("Done");}
+  else if (command=="alias") { param.toCharArray(conf.aliasdevice,20); saveconf(); }
+  else if (command=="instal") { param.toCharArray(conf.instname,10); param.toCharArray(conf.mqttpath[1],10);saveconf(); Serial.println("Done");}
+  else if (command=="ssid") { param.toCharArray(conf.ssidSTA,20); saveconf();Serial.println("Done"); }
+  else if (command=="pass") { param.toCharArray(conf.passSTA,20); saveconf(); Serial.println("Done");}
+  else if (command=="seg") { conf.netseg=param.toInt(); conf.EEip[2]=conf.netseg; conf.EEgw[2]=conf.netseg; saveconf(); Serial.println("Done");}
+  else { Serial.println("Command not found"); }
+}
+
 ///////////////////////////////////////////////////////////////////////////
 void ICACHE_FLASH_ATTR loop(void)
 {
   //////////////////////////////////////////////////  
   unsigned long tini = millis();
   tini=millis();
+  if (Serial.available())
+    {
+    char thisChar = Serial.read();
+    if ((thisChar=='\n') || (thisChar=='\r'))
+      { 
+      execcom();
+      sinput="";
+      }
+    else
+      { sinput=sinput+thisChar;  }
+    }
+    
   handleRF();
   if (conf.ftpenable) ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
   server.handleClient();    // atiende peticiones http
