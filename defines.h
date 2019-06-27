@@ -141,7 +141,8 @@
 #define faltafichero 109
 #define useftp 110
 #define guardarexportar 111  
-#define idioma 112                                  
+#define idioma 112   
+#define domingo 113                               
 
 
 //////////////////////////////////////////////////////////////////////

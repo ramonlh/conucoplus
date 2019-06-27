@@ -279,6 +279,5 @@ unsigned long tini=0;
 String mqttclientID="";
 File fmsg;
 
-//char sinput[maxsinput]="";
 String sinput="";
 

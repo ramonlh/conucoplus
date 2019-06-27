@@ -1582,9 +1582,7 @@ void ICACHE_FLASH_ATTR setupremHTML()
   printP(tr);
   printColspan(4);
   printP(t(pietiporem));
-  ///////////////////
   printP(href_i,"\"sr?p=0&m=1\"> Scan",href_f);
-  //////////////////
   printP(td_f,tr_f);
   writeFooter(guardar, false);
   serversend200();
@@ -2682,9 +2680,9 @@ void ICACHE_FLASH_ATTR setupDevRemHTML()
               readdescr(filedesctemp, conf.senalrem[j], 20); savedescr(filesalrem, auxdesc, j, 20);
             }
           }
-        saveconf();
         }
       }
+    saveconf();
     } 
   clearmsg();
   mp=1;
@@ -2815,7 +2813,6 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
   printremote();
   if (!autOK()) { sendOther(loghtm,-1); return; }
   iddevicetemp = server.arg(0).toInt(); // núm. dispositivo
-
   int auxerr=ReqJsonConf(iddevicetemp, 88);
   if (auxerr==HTTP_CODE_OK) {
     extraevaloresTempConf(false);
@@ -2829,9 +2826,9 @@ void ICACHE_FLASH_ATTR setupDevRemioHTML()
           if (conf.idsalremote[j] == conf.idremote[posdevice])
             if ((conf.senalrem[j] >= 0) && (conf.senalrem[j] <= 7))
               { readdescr(filedesctemp, conf.senalrem[j], 20); savedescr(filesalrem, auxdesc, j, 20); }
-        saveconf();
         }
       }
+    saveconf();
     }
   clearmsg();
   mp=1;
@@ -3583,7 +3580,7 @@ void ICACHE_FLASH_ATTR setupSemHTML()
       else
         {
         printP(b);
-        if (getbit8(conf.prgdia[i], j) == 1) printDiaSem(j); else printP(b);
+        if (getbit8(conf.prgdia[i], j) == 1) printDiaSem(true,j); else printP(b);
         printP(b);    // días de la semana
         }
     printP(c(pre_f), td_f);

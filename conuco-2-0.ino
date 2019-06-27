@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2003    // 
+#define versinst 2004    // 
 #define debug true
 #define debugwifi false
 
@@ -40,7 +40,7 @@ extern "C" {
 #include "variables.h"                // include
 //#include "uMQTTBroker.h"
 
-//uMQTTBroker myBroker;
+//uMQTTBroker myBroker(1883,1,0);
 ADC_MODE(ADC_TOUT);
 ESP8266WebServer server(88);
 OneWire owire(owPin);
@@ -94,13 +94,12 @@ void initPines()
 
 void initSerial() { Serial.begin (115200);  delay(10); }
 void initEEPROM() { EEPROM.begin(ROMsize); }
+
 void initSPIFFS()
 {
   Serial.println(); Serial.println(t(files));
   Serial.print(c(tspiffs));Serial.print(b);
   if (SPIFFS.begin()) Serial.println(ok); else { Serial.println(c(terror)); ; return; }
-//  Dir dir=SPIFFS.openDir(barra);
-//  while (dir.next())  { Serial.print(dir.fileName()); Serial.print(b); File f=dir.openFile(letrar); Serial.println(f.size());  }
 }
 void initFTP() {  ftpSrv.begin(conf.userDev,conf.passDev);  }
 void initDS18B20()
@@ -144,7 +143,7 @@ void initWiFi()
     WiFi.softAPmacAddress().substring(i*3,i*3+2).toCharArray(conf.EEmac[i], 3);
     strcat(mac, conf.EEmac[i]);
     }
-  if ((conf.wifimode==1) || (conf.wifimode==2) || (conf.wifimode==12)) // AP o AP+STA
+  if ((conf.wifimode==1) || (conf.wifimode==2)) // AP o AP+STA
     {
     WiFi.channel(conf.canalAP);
     WiFi.softAP(conf.ssidAP, conf.passAP, conf.canalAP, false);
@@ -157,10 +156,11 @@ void initWiFi()
     if (conf.staticIP==1) 
       { 
       WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2); 
+//      Serial.println("WiFi.config()");
       }
     dPrint(crlf);
-//    WiFi.begin(conf.ssidSTA, conf.passSTA, true);
-    WiFi.begin(conf.ssidSTA, conf.passSTA);
+    WiFi.begin(conf.ssidSTA, conf.passSTA, true);
+//    WiFi.begin(conf.ssidSTA, conf.passSTA);
     if (debugwifi) Serial.setDebugOutput(true);
     byte cont=0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
@@ -284,19 +284,19 @@ void checkRemotes()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 void ICACHE_FLASH_ATTR setup(void) {
+  initSerial();
+  initSPIFFS();
+  leerConf();
   initvars();
   initPines();
-  initSerial();
   initEEPROM();
-  initSPIFFS();
-  initFTP();
-  initDS18B20();
-  leerConf();
-  initWiFi();
-  initwebserver();
-  timeClient.begin();
   initEntDig();
   initSalDig();
+  initDS18B20();
+  initWiFi();
+  initwebserver();
+  initFTP();
+  timeClient.begin();
   if (WiFi.isConnected()) {
     initTime();
     checkMyIP();
@@ -385,7 +385,8 @@ void task1()      // 1 segundo
   else if (tempbt2>=10) { reinitWiFi(); ESP.reset(); } // mod Reset Wifi
   tempbt2=0;
   
-  if (countfaulttime < conf.TempDesactPrg) procesaeventos();
+//  if (countfaulttime < conf.TempDesactPrg) procesaeventos();
+  procesaeventos();
   procesaTimeMax();
   for (byte j=0; j<maxsalrem; j++)
     if (conf.idsalremote[j] > 0)
@@ -433,15 +434,15 @@ void task60()     // 60 segundos
 {
   tini = millis();
   memset(bevenENABLE, sizeof(bevenENABLE),0);
-  if (countfaulttime < conf.TempDesactPrg)      {
+//  if (countfaulttime < conf.TempDesactPrg)      {
     procesaSemanal();
     procesaFechas();
-    }
-  else
-    {
-    timeClient.setTimeOffset(7200);
-    if (timeClient.update()==1) { countfaulttime=0; setTime(timeClient.getEpochTime());  }
-    }
+//    }
+//  else
+//    {
+//    timeClient.setTimeOffset(7200);
+//    if (timeClient.update()==1) { countfaulttime=0; setTime(timeClient.getEpochTime());  }
+//    }
   if ((millis() - tini) > 5000) { Serial.print(60); Serial.print(F(" SEG:")); Serial.println(millis() - tini); }
   mact60 = millis();
 }
@@ -452,7 +453,6 @@ void task3600()         // 3600 segundos=1 hora
   if (WiFi.isConnected()) {
     timeClient.setTimeOffset(7200);
     if (timeClient.update()==1) { countfaulttime=0; setTime(timeClient.getEpochTime());  }
-//      getMyIP();
     checkMyIP();
     checkForUpdates();
     }
@@ -467,7 +467,12 @@ void execcom()
   param=sinput.substring(sinput.indexOf(",")+1);
 //  Serial.print("comando/param: "); Serial.print(command);Serial.print("/");Serial.println(param);
   if (command=="reset") ESP.restart();
-  else if (command=="files")  { Serial.print("files ");  Serial.println(checkfiles()?"OK":"ERROR");}
+  else if (command=="files")  
+    { 
+    Dir dir=SPIFFS.openDir(barra);
+    while (dir.next())  { Serial.print(dir.fileName()); Serial.print(b); File f=dir.openFile(letrar); Serial.println(f.size());  }
+    Serial.print("files ");  Serial.println(checkfiles()?"OK":"ERROR");
+    }
   else if ((command=="help") || (command=="h"))
     {   
     Serial.println("reset");
@@ -512,13 +517,8 @@ void ICACHE_FLASH_ATTR loop(void)
   if (Serial.available())
     {
     char thisChar = Serial.read();
-    if ((thisChar=='\n') || (thisChar=='\r'))
-      { 
-      execcom();
-      sinput="";
-      }
-    else
-      { sinput=sinput+thisChar;  }
+    if ((thisChar=='\n') || (thisChar=='\r')) { execcom(); sinput="";  }
+    else { sinput=sinput+thisChar;  }
     }
     
   handleRF();

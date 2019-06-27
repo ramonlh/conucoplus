@@ -262,9 +262,26 @@ void ICACHE_FLASH_ATTR tituloFila(PGM_P texto, int num, PGM_P letra, int indice)
   printPiP(b, num, td_f);
 }
 
-
+void ICACHE_FLASH_ATTR printDiaSem(boolean abrev, byte i)
+  {
+   if (abrev)
+     {
+      if (i==0) printP(letraD);  
+      if (i==1) printP(letraL);  
+      if (i==2) printP(letraM);  
+      if (i==3) printP(letraX);  
+      if (i==4) printP(letraJ);  
+      if (i==5) printP(letraV);  
+      if (i==6) printP(letraS);  
+     }
+   else
+     printP(t(domingo+1));
+  }
+  
 void printTime()
 {
+  printDiaSem(false,weekday());
+  printP(coma,b);
   printI(day()); printPiP(barra, month(), barra); printIP(year(),b);
   if (hour()<10) printP(cero); printI(hour()); printP(dp);
   if (minute()<10) printP(cero); printI(minute()); printP(dp);
@@ -275,7 +292,7 @@ void ICACHE_FLASH_ATTR HtmlGetStateTime()
 {
   printColspan(2);
   printTime();
-  printP(b, c(PRG), b, (countfaulttime<conf.TempDesactPrg)?ON:OFF,b);
+  printP(b);
   printI(ESP.getFreeHeap());
   printP(td_f);
 }
@@ -336,14 +353,4 @@ void ICACHE_FLASH_ATTR sendOther(const char *otherURL, int param)
   clearmsg();
 }
 
-void ICACHE_FLASH_ATTR printDiaSem(byte i)
-  {
-  if (i==0) printP(letraD);  
-  if (i==1) printP(letraL);  
-  if (i==2) printP(letraM);  
-  if (i==3) printP(letraX);  
-  if (i==4) printP(letraJ);  
-  if (i==5) printP(letraV);  
-  if (i==6) printP(letraS);  
-  }
 
