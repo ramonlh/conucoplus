@@ -110,7 +110,10 @@ Files not found<br>
 Use FTP o \"Sketch Data Upload\"<br>    
 Save/Export                             
 Language                                
-                                       .
-                                       .
-                                       .
-                                       .
+Sunday                                  
+Monday                                  
+Tuesday                                 
+Wednesday                               
+Thursday                                
+Friday                                  
+Saturday                                
