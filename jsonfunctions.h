@@ -47,7 +47,7 @@ void ICACHE_FLASH_ATTR buildJson()
   printP(comillas,letram,comillas,dp); printI(modelo); printP(coma);
   printP(comillas,ID,comillas,dp,comillas);      for (byte i=0;i<6;i++) printP(conf.EEmac[i]);      // MAC
   printP(comillas,coma);
-  printP(letraD,letraV,comillas); printPiP(dp,conf.iddevice,coma);                   // DV Device
+  printP(comillas,letraD,letraV,comillas); printPiP(dp,conf.iddevice,coma);                   // DV Device
   printP(comillas,letraM,letraJ,comillas);  printP(dp,comillas,conf.idmyjson,comillas,coma);                // MJ IdMyjson
   
   for (byte i=0; i<maxTemp; ++i) buildvalorF(letrat,vacio,vacio,i,(MbR[i]*0.01),2,vacio);  // TEMPERATURAS
