@@ -74,7 +74,11 @@ int ICACHE_FLASH_ATTR mqttextraepin(char* topic, String command)
 
 void ICACHE_FLASH_ATTR mqttpublishallvalues()  
   { 
-  for (byte i=0;i<14;i++) { mqttpublish(i);  }
+  for (byte i=0;i<7;i++) 
+   if (getbit8(conf.mqttsalenable,i)==1)
+     { mqttpublish(i);  
+       if (i<=2) mqttpublish(i+11);}
+  for (byte i=8;i<10;i++) { mqttpublish(i);  }
   for (byte i=0;i<maxsalrem;i++)  { if (conf.idsalremote[i]>167) mqttpublish(i+100); }     // BMP085/BMP180 T/P    
   }
 
@@ -4690,12 +4694,13 @@ void ICACHE_FLASH_ATTR procesaRF()
     }
 
   i=0;
-  encontrado=false;
-  while ((i<18) && (!encontrado))
+//  encontrado=false;
+//  while ((i<18) && (!encontrado))
+  while (i<18)
 //  while (i<34)      // ¿porqué pondría 34? porque son 2 locales + 32 posibles remotas
     {
     if (lastcode==conf.code433.codeon[i])   {     // codeon tiene 18 celdas
-      encontrado=true;
+//      encontrado=true;
       if (i<=1) {
         pinVAL (sdPin[i], 1, conf.iddevice);   }
       else    {
@@ -4704,7 +4709,7 @@ void ICACHE_FLASH_ATTR procesaRF()
         }
       }
     if (lastcode==conf.code433.codeoff[i])    {
-      encontrado=true;
+//      encontrado=true;
       if (i<=1) {
         pinVAL (sdPin[i], 0, conf.iddevice);   }
       else    {

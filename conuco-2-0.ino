@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2004    // 
+#define versinst 2005    // 
 #define debug true
 #define debugwifi false
 

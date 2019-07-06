@@ -53,8 +53,8 @@ typedef struct {    // datos configuración
                 byte bescenaact[maxEsc][5];       // 2 x 5 = 10 bytes, activación de escenas  (valor >0, ni ON ni OFF), conjuntamente con bescena
                 byte bactfec[1]={0};              // 1 byte, por bits, uno por programa
                 byte fecsal[maxPrgFec]={0,0,0,0}; // 4 bytes, salida a actuar en cada programación por fechas
-                byte mqttsalenable[1]={0};        // publicar mqtt para cada señal.
-                byte disponible[3]={0,0,0};       // DISPONIBLE
+                byte mqttsalenable[2]={0,0};      // publicar mqtt para cada señal.
+                byte disponible[2]={0,0};       // DISPONIBLE
                 byte fecmes[maxPrgFec]={0,0,0,0}; // 4 bytes, mes
                 byte fecdia[maxPrgFec]={0,0,0,0}; // 4 bytes, día del mes
                 byte fechor[maxPrgFec]={0,0,0,0}; // 4 bytes, hora
