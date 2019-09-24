@@ -194,7 +194,8 @@ void ICACHE_FLASH_ATTR buildJsonConf(boolean remoto, boolean sendpass, boolean r
     buildvalorI(letrai,letraf,letras,i,remoto?iftttpinSDtemp[i]:conf.iftttpinSD[i],vacio);                          // ifsn, IFTTT activo
     }
   printP(comillas,letraf,letras,letrav,comillas);
-  printP(dp,comillas,remoto?fwUrlBasetemp:conf.fwUrlBase);                                                          // fsv, URLbase
+  printP(dp,comillas,remoto?fwUrlBasetemp:conf.fwUrlBase,comillas);  // fsv, URLbase
+  printP(llave_f);
 }
 
 int ICACHE_FLASH_ATTR ReqJson(int ip, int port) // pide json a remoto 

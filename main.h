@@ -74,7 +74,7 @@ int ICACHE_FLASH_ATTR mqttextraepin(char* topic, String command)
 
 void ICACHE_FLASH_ATTR mqttpublishallvalues()  
   { 
-  for (byte i=0;i<7;i++) 
+  for (byte i=0;i<8;i++) 
    if (getbit8(conf.mqttsalenable,i)==1)
      { mqttpublish(i);  
        if (i<=2) mqttpublish(i+11);}
@@ -647,6 +647,7 @@ int ICACHE_FLASH_ATTR actualizaremotos()    // pide datos a remotos
   int auxerr = 0;
   for (byte i=0; i<maxdevrem; i++)
     {
+      Serial.print("Remoto: "); Serial.print(conf.idremote[i]); Serial.print(b); 
     if ((conf.idremote[i] < 150) || (conf.idremote[i] > 166))
       {
       strcpy (auxdesc, vacio); savedescr(fileidmyjsonrem, auxdesc, i, 10);
@@ -657,11 +658,13 @@ int ICACHE_FLASH_ATTR actualizaremotos()    // pide datos a remotos
       if (actirem[i])
         {
         auxerr = ReqJson(conf.idremote[i], 88); 
+        Serial.print(auxerr);
         if (auxerr >= 0) { parseJsonremoto();  } // pone los valores en la variable "datosremoto" y en el remoto correspondiente
         else { timerem[i]++; if (timerem[i] >= maxerrorrem) { setactivarem(i, false); timerem[i] = 0; }   }
         }
       else { timerem[i]++; if (timerem[i] >= 1)    { setactivarem(i, true); timerem[i] = 9; }  }
       }
+      Serial.println();
     }
   return auxerr;
 }
@@ -2485,15 +2488,27 @@ void ICACHE_FLASH_ATTR lineasetuprfonoff(boolean remote, byte num, char* texto)
   printP(rfon, mayor);
   printP(texto, b, ON, td_f,td);
   printL(conf.code433.codeon[remote?num+2:num]);
-  printP(td_f,td, href_i, syhtm, interr, letran);
-  printPiP(ig, num, amper);
-  printP(letrar,ig);
-  if (remote) printP(letrar);
-  printP(rfoff, mayor);
-  printP(texto, b, OFF, td_f,td);
-  printL(conf.code433.codeoff[remote?num+2:num]);
   printP(td_f,tr_f);
 }
+
+//void ICACHE_FLASH_ATR lineasetuprfonoff(boolean remote, byte num, char* texto)
+//{
+//  printP(tr, td, href_i, syhtm, interr, letran);
+//  printPiP(ig, num, amper);
+//  printP(letrar, ig);
+//  if (remote) printP(letrar);
+//  printP(rfon, mayor);
+//  printP(texto, b, ON, td_f,td);
+//  printL(conf.code433.codeon[remote?num+2:num]);
+//  printP(td_f,td, href_i, syhtm, interr, letran);
+//  printPiP(ig, num, amper);
+//  printP(letrar,ig);
+//  if (remote) printP(letrar);
+//  printP(rfoff, mayor);
+//  printP(texto, b, OFF, td_f,td);
+//  printL(conf.code433.codeoff[remote?num+2:num]);
+//  printP(td_f,tr_f);
+//}
 
 void ICACHE_FLASH_ATTR lineasetuprfkey(byte num, PGM_P texto, unsigned long valor)
 {
@@ -2514,11 +2529,11 @@ void ICACHE_FLASH_ATTR setuprfHTML()
   writeMenu(3,2);
   writeForm(rfhtm);
   printP(tr);
-  lineasetuprfkey(1, intro, conf.rfkeys.code[0]);
+  lineasetuprfkey(1, intro, conf.rfkeys.code[0]);printP(tr_f, tr);
   lineasetuprfkey(2, esc, conf.rfkeys.code[1]);  printP(tr_f, tr);
-  lineasetuprfkey(3, ups, conf.rfkeys.code[2]);
+  lineasetuprfkey(3, ups, conf.rfkeys.code[2]); printP(tr_f, tr);
   lineasetuprfkey(4, downs, conf.rfkeys.code[3]);  printP(tr_f, tr);
-  lineasetuprfkey(5, lefts, conf.rfkeys.code[4]);
+  lineasetuprfkey(5, lefts, conf.rfkeys.code[4]); printP(tr_f, tr);
   lineasetuprfkey(6, rigths, conf.rfkeys.code[5]);  printP(tr_f);
 
   espacioSep(4);
@@ -3181,6 +3196,7 @@ void ICACHE_FLASH_ATTR setupNetHTML()
       else if (param_number==22) { conf.webPort = server.arg(i).toInt();  }
       else if (param_number==41) { conf.wifimode = server.arg(i).toInt(); }
       //      else if (param_number==42) {if (nAP != 0) WiFi.SSID(StrtoInt(server.arg(i))).toCharArray(conf.ssidSTA, 20);}
+      else if (param_number==42) { server.arg(i).toCharArray(conf.ssidSTA, 20);}
       else if (param_number==43) { server.arg(i).toCharArray(conf.passSTA, 20); }
       else if (param_number==45) { server.arg(i).toCharArray(conf.passAP, 9); }
       else if (param_number==46) { conf.staticIP = server.arg(i).toInt(); }
@@ -3207,7 +3223,7 @@ void ICACHE_FLASH_ATTR setupNetHTML()
   printP(tr);
   ccell(routerssid);
   printP(td);
-  printcampoC(42, conf.ssidSTA, 20, true, false, false,false);
+  printcampoC(42, conf.ssidSTA, 20, true, true, false,false);
   printP(href_i, comillas, scanap, comillas,mayor, b);
   printP(t(explorar), href_f, td_f, tr_f);
 
@@ -4221,7 +4237,8 @@ void initConf()
   conf.netseg=1;                                        // segmento de red local
   memset(conf.setpoint,0,sizeof(conf.setpoint));        // setpoint temperaturas
   memset(conf.salsetpoint,0,sizeof(conf.salsetpoint));  // salida asociada al setpoint (0,1 salidas locales; 2-17 salidas remotas)
-  memset(conf.accsetpoint,0,sizeof(conf.accsetpoint));  // acción asociada al setpoint (0=OFF,1=ON,2=ninguna)
+//  memset(conf.accsetpoint,0,sizeof(conf.accsetpoint));  // acción asociada al setpoint (0=OFF,1=ON,2=ninguna)
+  for (byte i=0;i<2;i++) conf.accsetpoint[i]=2; 
   conf.ftpenable=1;                         // FTP activado
   conf.lang=0;                              // español, por defecto
   
@@ -4664,6 +4681,62 @@ void ICACHE_FLASH_ATTR leevaloresMB()
   }
 }
 
+//void ICACHE_FLASH_ATTR procesaRF()
+//{
+//  byte i=0;
+//  boolean encontrado=false;
+//  while ((i<6) && (!encontrado))
+//    {
+//    if (lastcode==conf.rfkeys.code[i])
+//      {
+//      encontrado = true;
+//      lcd.init();
+//      lcd.clear();
+//      if (i==0) { if (paract==1) { saveconf(); pendsave=0; } }    // Intro
+//      else if (i==1) { paract=0; }                                        // Esc
+//      else if (i==2) { paract++; if (paract > maxparam) paract=1; }       // Up
+//      else if (i==3) { paract--; if (paract < 1) paract = maxparam; }     // Down
+//      else if (i==4) { if (paract==1) { // Left
+//          conf.iddevice--; conf.EEip[3]=conf.iddevice;
+//          strcpy(conf.ssidAP, c(CONUCO)); strcat(conf.ssidAP, subray); strcat(conf.ssidAP, itoa(conf.iddevice, buff, 10));
+//          pendsave = true;       }  }
+//      else if (i==5) { if (paract==1) {   // Rigth
+//          conf.iddevice++; conf.EEip[3]=conf.iddevice;
+//          strcpy(conf.ssidAP, c(CONUCO)); strcat(conf.ssidAP, subray); strcat(conf.ssidAP, itoa(conf.iddevice, buff, 10));
+//          pendsave = true;  }  }
+//      lcdshowconf(true);
+//      return;
+//      }
+//    i++;
+//    }
+//
+//  i=0;
+////  encontrado=false;
+//  while (i<18)
+////  while (i<34)      // ¿porqué pondría 34? porque son 2 locales + 32 posibles remotas
+//    {
+//    if (lastcode==conf.code433.codeon[i])   {     // codeon tiene 18 celdas
+////      encontrado=true;
+//      if (i<=1) {
+//        pinVAL (sdPin[i], 1, conf.iddevice);   }
+//      else    {
+//        int auxerr=pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, 1);
+//        if ((auxerr==200) || (auxerr==303) || (auxerr == (-11))) setbit8(bstatremote,i-2,1);
+//        }
+//      }
+//    if (lastcode==conf.code433.codeoff[i])    {
+////      encontrado=true;
+//      if (i<=1) {
+//        pinVAL (sdPin[i], 0, conf.iddevice);   }
+//      else    {
+//        int auxerr = pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, 0);
+//        if ((auxerr==200) || (auxerr==303) || (auxerr==(-11))) setbit8(bstatremote,i-2,0);
+//        }
+//      }
+//    i++;
+//    }
+//}
+
 void ICACHE_FLASH_ATTR procesaRF()
 {
   byte i=0;
@@ -4694,29 +4767,27 @@ void ICACHE_FLASH_ATTR procesaRF()
     }
 
   i=0;
-//  encontrado=false;
-//  while ((i<18) && (!encontrado))
   while (i<18)
-//  while (i<34)      // ¿porqué pondría 34? porque son 2 locales + 32 posibles remotas
     {
     if (lastcode==conf.code433.codeon[i])   {     // codeon tiene 18 celdas
-//      encontrado=true;
+      int newstatus=0;
       if (i<=1) {
-        pinVAL (sdPin[i], 1, conf.iddevice);   }
+        if (getbit8(conf.MbC8,i)!=1==0) newstatus=1; else  newstatus=0;       
+        pinVAL (sdPin[i], newstatus, conf.iddevice);   }
       else    {
-        int auxerr=pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, 1);
-        if ((auxerr==200) || (auxerr==303) || (auxerr == (-11))) setbit8(bstatremote,i-2,1);
+        if (getbit8(bstatremote,i-2)==0) newstatus=1; else  newstatus=0;
+        int auxerr=pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, newstatus);
+        if ((auxerr==200) || (auxerr==303) || (auxerr == (-11))) setbit8(bstatremote,i-2,newstatus);
         }
       }
-    if (lastcode==conf.code433.codeoff[i])    {
-//      encontrado=true;
-      if (i<=1) {
-        pinVAL (sdPin[i], 0, conf.iddevice);   }
-      else    {
-        int auxerr = pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, 0);
-        if ((auxerr==200) || (auxerr==303) || (auxerr==(-11))) setbit8(bstatremote,i-2,0);
-        }
-      }
+//    if (lastcode==conf.code433.codeoff[i])    {
+//      if (i<=1) {
+//        pinVAL (sdPin[i], 0, conf.iddevice);   }
+//      else    {
+//        int auxerr = pinvalR(conf.idsalremote[i-2], 88, conf.senalrem[i-2]-6, 0);
+//        if ((auxerr==200) || (auxerr==303) || (auxerr==(-11))) setbit8(bstatremote,i-2,0);
+//        }
+//      }
     i++;
     }
 }
