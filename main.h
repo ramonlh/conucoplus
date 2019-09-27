@@ -647,7 +647,6 @@ int ICACHE_FLASH_ATTR actualizaremotos()    // pide datos a remotos
   int auxerr = 0;
   for (byte i=0; i<maxdevrem; i++)
     {
-      Serial.print("Remoto: "); Serial.print(conf.idremote[i]); Serial.print(b); 
     if ((conf.idremote[i] < 150) || (conf.idremote[i] > 166))
       {
       strcpy (auxdesc, vacio); savedescr(fileidmyjsonrem, auxdesc, i, 10);

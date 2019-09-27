@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2008    // 
+#define versinst 2009    // 
 #define debug true
 #define debugwifi false
 
@@ -147,27 +147,26 @@ void leerConf()
 
 void initWiFi()
 {
-  if (conf.wifimode == 0) WiFi.mode(WIFI_STA);
-  else if (conf.wifimode == 1) WiFi.mode(WIFI_AP);
-  else if ((conf.wifimode == 2) or (conf.wifimode == 12)) WiFi.mode(WIFI_AP_STA);
+  if (conf.wifimode==0) WiFi.mode(WIFI_STA);
+  else if (conf.wifimode==1) WiFi.mode(WIFI_AP);
+  else if (conf.wifimode==2) WiFi.mode(WIFI_AP_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11N);
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  WiFi.setAutoConnect(true);
   WiFi.setAutoReconnect(true);
   dPrint(t(wifimodet)); dPrint(dp); dPrintI(conf.wifimode); dPrint(crlf);
   dPrint(c(MAC)); dPrint(dp); dPrint(WiFi.softAPmacAddress()); dPrint(crlf);
   for (byte i = 0; i<6; i++) {
     WiFi.softAPmacAddress().substring(i*3,i*3+2).toCharArray(conf.EEmac[i], 3);
     strcat(mac, conf.EEmac[i]);
-  }
-  if ((conf.wifimode == 1) || (conf.wifimode == 2)) // AP o AP+STA
+    }
+  if ((conf.wifimode==1) || (conf.wifimode==2)) // AP o AP+STA
     {
     WiFi.channel(conf.canalAP);
     WiFi.softAP(conf.ssidAP, conf.passAP, conf.canalAP, false);
     dPrint(t(canal)); dPrint(dp); dPrintI(WiFi.channel()); dPrint(crlf);
     dPrint(c(tIP)); dPrint(dp); Serial.print(WiFi.softAPIP()); dPrint(crlf);
     }
-  if ((conf.wifimode == 0) || (conf.wifimode == 2) || (conf.wifimode == 12)) // STA o AP+STA
+  if ((conf.wifimode==0) || (conf.wifimode==2)) // STA o AP+STA
     {
     dPrint(t(staticip));  dPrint(dp); dPrint(conf.staticIP ? t(SI) : t(NO)); dPrint(coma);
     if (conf.staticIP == 1)
@@ -175,8 +174,6 @@ void initWiFi()
       WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
       }
     dPrint(crlf);
-    //    WiFi.begin(conf.ssidSTA, conf.passSTA, true);
-    WiFi.begin(conf.ssidSTA, conf.passSTA);
     if (debugwifi) Serial.setDebugOutput(true);
     byte cont = 0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
