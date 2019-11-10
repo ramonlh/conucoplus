@@ -600,10 +600,12 @@ int ICACHE_FLASH_ATTR ifttttrigger(char *evento, char* key, char* value1, char* 
   byte i=0;
   while (auxchar[i]!='\0') { if (auxchar[i]==' ') auxchar[i]='_';  i++; }
   HTTPClient http;
+//  Serial.print("ifttttrigger:"); Serial.print(c(makeriftttcom)); Serial.print(barra); Serial.print(auxchar);
   http.begin(c(makeriftttcom), 80, auxchar);
   http.setTimeout(conf.timeoutNTP);
   int httpCode=http.GET();
-  if (httpCode < 0) addlog(2, httpCode, c(ifttt));
+//  Serial.print("  "); Serial.println(httpCode>=0?"OK":"ERROR");
+  if (httpCode<0) addlog(2, httpCode, c(ifttt));
   http.end();
   return httpCode;
 }
@@ -657,13 +659,11 @@ int ICACHE_FLASH_ATTR actualizaremotos()    // pide datos a remotos
       if (actirem[i])
         {
         auxerr = ReqJson(conf.idremote[i], 88); 
-        Serial.print(auxerr);
         if (auxerr >= 0) { parseJsonremoto();  } // pone los valores en la variable "datosremoto" y en el remoto correspondiente
         else { timerem[i]++; if (timerem[i] >= maxerrorrem) { setactivarem(i, false); timerem[i] = 0; }   }
         }
       else { timerem[i]++; if (timerem[i] >= 1)    { setactivarem(i, true); timerem[i] = 9; }  }
       }
-      Serial.println();
     }
   return auxerr;
 }

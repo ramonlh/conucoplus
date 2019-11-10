@@ -93,6 +93,7 @@ void ICACHE_FLASH_ATTR savedescr(char* namefile, char* descr, byte ind, byte len
 
 void ICACHE_FLASH_ATTR addlog(File fileact)
 {
+  return;
   if (day()<10) fileact.print(cero); fileact.print(day()); fileact.print(barra);
   if (month()<10) fileact.print(cero); fileact.print(month()); fileact.print(barra);
   if (year()<10) fileact.print(cero); fileact.print(year()); fileact.print(b);
@@ -103,6 +104,7 @@ void ICACHE_FLASH_ATTR addlog(File fileact)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 {
+  return;
   File auxfile=SPIFFS.open(filelog,"a+");
   if (auxfile)  
     { 
@@ -120,6 +122,7 @@ void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, PGM_P texto)
 {
+  return;
   File auxfile=SPIFFS.open("/log.txt","a+");
   if (auxfile)  
     { 

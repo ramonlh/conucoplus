@@ -169,20 +169,21 @@ void initWiFi()
   if ((conf.wifimode==0) || (conf.wifimode==2)) // STA o AP+STA
     {
     dPrint(t(staticip));  dPrint(dp); dPrint(conf.staticIP ? t(SI) : t(NO)); dPrint(coma);
-    if (conf.staticIP == 1)
+    if (conf.staticIP==1)
       {
       WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
+      }
+    else
+      {
+      WiFi.begin(conf.ssidSTA,conf.passSTA);
       }
     dPrint(crlf);
     if (debugwifi) Serial.setDebugOutput(true);
     byte cont = 0;
-    dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-    while ((!WiFi.isConnected()) && (cont++ < 20))  {
-      delay(500);
-      dPrint(punto);
-    }
+    dPrint(t(conectando)); dPrint(b); dPrint(conf.ssidSTA); dPrint(barra); dPrint(conf.passSTA); dPrint(b);
+    while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(500); dPrint(punto);  }
     dPrint(b);
-    dPrint((WiFi.status() == WL_CONNECTED) ? ok : c(terror)); dPrint(crlf);
+    dPrint((WiFi.status()==WL_CONNECTED)?ok:c(terror)); dPrint(crlf);
     dPrint(c(tIP)); dPrint(dp); Serial.print(WiFi.localIP()); dPrint(crlf);
     dPrint(c(tport)); dPrint(dp); Serial.print(88); dPrint(crlf);
     dPrint("GW"); dPrint(dp); Serial.print(WiFi.gatewayIP()); dPrint(crlf);
@@ -368,13 +369,13 @@ void testChange()
     if (conf.iottweetenable == 1) postIoTweet();
     actualizamasters();
   }
-  if (iftttchange[0] > 0)
+  if (iftttchange[0]>0)
   {
-    if (getbit8(iftttchange, 0) == 1) // SD 0
+    if (getbit8(iftttchange,0)==1) // SD 0
     {
-      if ((getbit8(conf.iftttpinSD, 0) == 1) && (getbit8(conf.MbC8, 0) == 1))
+      if ((getbit8(conf.iftttpinSD,0)==1) && (getbit8(conf.MbC8,0)==1))
         ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal, 6, 20), textonoff(1));
-      if ((getbit8(conf.iftttpinSD, 8) == 1) && (getbit8(conf.MbC8, 0) == 0))
+      if ((getbit8(conf.iftttpinSD,8)==1) && (getbit8(conf.MbC8,0)==0))
         ifttttrigger(conucochar, conf.iftttkey, conf.aliasdevice, readdescr(filedesclocal, 6, 20), textonoff(0));
     }
     if (getbit8(iftttchange, 1) == 1) // SD 1
