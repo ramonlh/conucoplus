@@ -1,26 +1,75 @@
 
+  #define modelo 32
+  #define portdefault 88
+  #define ROMsize 4096
+  #define maxerrorrem 5
+  #define SLAVE 0
+  #define MASTER 1
+  #define maxgpio 26
+  #define maxgpiovar 10
+  #define maxED 4         // número entradas digitales
+  #define maxSD 8        // número salidas digitales + reléss
+  #define maxEA 2         // número ADC
+  #define maxDAC 2        // número DAC
+  #define maxDHT 10       // tantas como gpiovar  
+  #define maxTemp 8       // número máximo de sondas ds18B20
+  #define maxWire 2       // número de puertos 1 wire
+  #define maxdevrem 16    // número de dispositivos remotos
+  #define maxsalrem 32    // número de salidas remotas
+  #define maxPrg 8        // número de programas
+  #define maxPrgSem 8     // número de programas semanales
+  #define maxPrgFec 4     // número de programas fechas
+  #define maxEsc 8        // número de escenas
+  #define maxwebcalls 4   // número máximo de web calls
+  #define maxparam 14     // número máximo parámetros LCD
+  #define maxpaneles 10   // número máximo de paneles
+  #define maxsensortype 30 
+  #define maxtftpages 6
+  
+  // 
+  #define I0 36    // OK    // Inputs
+  #define I1 39    // OK  
+  #define I2 34    // OK  
+  #define I3 35    // OK  
 
-#define modelo 8266
-#define ROMsize 4096
-#define maxerrorrem 5
-#define SLAVE 0
-#define MASTER 1
-#define maxED 2         // número entradas digitales
-#define maxSD 2         // número salidas digitales + reléss
-#define maxEA 1         // número entradas analógicas
-#define maxTemp 3       // número máximo de sondas ds18B20
-#define maxdevrem 16    // número de dispositivos remotos
-#define maxsalrem 32    // número de salidas remotas
-#define maxPrg 8        // número de programas
-#define maxPrgSem 8     // número de programas semanales
-#define maxPrgFec 4     // número de programas fechas
-#define maxEsc 8        // número de escenas
-#define maxwebcalls 4   // número máximo de web calls
-#define maxparam 14     // número máximo parámetros LCD
-#define maxpaneles 10   // número máximo de paneles
-#define maxsinput 50    // tamaño de comando por puerto serie
-///////////////////////////////////////////////////////////////////////////////
-#define baseAna 3
+  #define O0 17    // OK  Relé 1
+  #define O1 23    // OK  Relé 2     
+  #define O2 22    // OK  ¡JUMPER!   (SCL)         
+  #define O3 21    // OK  ¡JUMPER!   (SDA)
+  #define O4 19    // OK  
+  #define O5 5     // OK          
+  #define O6 18    // OK            
+  #define O7 16    // OK      
+  
+  #define TX 1           // UART1 
+  #define RX 3
+  #define RXD2 4        // UART2
+  #define TXD2 2
+  #define SPIMISO 12      // SPI
+  #define SPIMOSI 13
+  #define SPICLK 14
+  #define SPICS 15
+
+  #define SDA 21          // I2C-SDA / O2
+  #define SCL 22          // I2C-SCL / O3
+
+  #define W0 26          // 1 wire port 
+
+  #define RX433 21
+  #define TX433 22     
+
+  #define TFT_CS 15
+  #define TFT_DC 21
+  #define TFT_MOSI 13
+  #define TFT_CLK 14 
+  #define TFT_RSTxxx 22
+  #define TFT_MISO 12
+
+  #define TS_CS 33
+
+  #define baseAna 8
+
+////////////////////////////////
 #define nEVE 8          // número de eventos
 #define despIFTTT 252   // valor para disparar IFTTT, 252
 #define timerf 100      // milisegundos mínimo para órdenes RF
@@ -94,7 +143,7 @@
 #define preciokwh 62
 #define programa 63
 #define programas 64
-#define red 65
+#define tred 65
 #define servred 66
 #define reiniciando 67
 #define rele 68     // no usada
@@ -141,12 +190,11 @@
 #define faltafichero 109
 #define useftp 110
 #define guardarexportar 111  
-#define idioma 112   
-#define domingo 113                               
-
+#define idioma 112  
+#define bombacalor 113  
 
 //////////////////////////////////////////////////////////////////////
-////// textos, deben coincidir con los textos del fichero common.txtst
+////// textos, deben coincidir con los textos del fichero common.txt
 #define dbm 2
 #define Time 3
 #define Chipid 4
@@ -322,7 +370,7 @@
 #define center_i 172
 #define center_f 173
 #define tclass 174
-#define connection 175 
+#define tconnection 175 
 //#define closet 176
 //#define contenttype 177
 #define contentdisposition 178
@@ -368,7 +416,7 @@
 //#define attachfilename 217
 #define head_f 218
 #define form_action 219
-//#define espere 220
+#define SMALL 220
 #define htmlRefresh_i 221
 #define fontsize_i 222
 #define font_f 223
@@ -383,8 +431,8 @@
 #define web 232
 #define tid 233
 #define tdcolspan_i 234
-#define resetcontp 235
-#define ttitle 236
+#define resetcontp 235 
+#define title 236
 //#define toff 237
 //#define tvalue 238
 #define actwc 239
@@ -451,7 +499,7 @@
 #define dashiconoff 300
 #define dashiconon 301
 #define gpio 302
-#define small 303
+//#define small 303
 #define localip 304
 #define publicip 305
 #define maindevice 306

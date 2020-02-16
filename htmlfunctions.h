@@ -175,15 +175,14 @@ void ICACHE_FLASH_ATTR writeHeader(boolean refreshmode, boolean ajaxmode)
 {
   printP(menor, thtml);
   printP(b, c(xmlns), mayor);
-  printP(menor, thead, mayor, menor, c(ttitle), mayor);
+  printP(menor, thead, mayor, menor, c(title), mayor);
   printP(c(conuco));
   printP(c(web));
   printP(c(tserver), menor, barra);
-  printP(c(ttitle));
-  printP(mayor);
-  printPfile(filehtmlhead);
+  printP(c(title));
+  printP(mayor,htmlHead_3);
   if (ajaxmode)
-    printPfile(fileajaxscript);
+    printP(ajaxscript);
   else
     if (refreshmode)
       if (conf.peractpan>0) printPiP(c(htmlRefresh_i), conf.peractpan, comillascierre);
@@ -254,6 +253,32 @@ void ICACHE_FLASH_ATTR printcampoCB(int numpar, int valact, PGM_P t0, PGM_P t1, 
   printcampoCB(numpar,valact,sizeof(t)/sizeof(t[0]),t,printtd);
 }
 
+void printaddr1Wire(byte i)
+{
+  for (uint8_t j=0;j<8;j++) { printH(conf.probecode[i][j]); } 
+}
+
+void ICACHE_FLASH_ATTR selectProbe(int numpar, int valact, boolean printtd)
+{
+  if (printtd) printP(td);
+  printinicampoCB(numpar);
+  for (byte i=0;i<nTemp+1;i++)   
+    {
+    printP(c(optionvalue));
+    printPiP(comillas, i, comillas);
+    if (valact==i) printselected(false);
+    printP(mayor); 
+    if (i<nTemp) {
+      for (uint8_t j=0;j<8;j++) 
+        { if (addr1Wire[i][j]<16) printP(cero); printH(addr1Wire[i][j]); } 
+      }
+    else
+      printP("No probe");
+    printP(c(option_f));   }
+  printP(c(select_f));
+  if (printtd) printP(td_f);
+}
+
 void ICACHE_FLASH_ATTR tituloFila(PGM_P texto, int num, PGM_P letra, int indice)
 {
   printP(td, paren_i);
@@ -262,26 +287,9 @@ void ICACHE_FLASH_ATTR tituloFila(PGM_P texto, int num, PGM_P letra, int indice)
   printPiP(b, num, td_f);
 }
 
-void ICACHE_FLASH_ATTR printDiaSem(boolean abrev, byte i)
-  {
-   if (abrev)
-     {
-      if (i==0) printP(letraD);  
-      if (i==1) printP(letraL);  
-      if (i==2) printP(letraM);  
-      if (i==3) printP(letraX);  
-      if (i==4) printP(letraJ);  
-      if (i==5) printP(letraV);  
-      if (i==6) printP(letraS);  
-     }
-   else
-     printP(t(domingo+1));
-  }
-  
+
 void printTime()
 {
-  printDiaSem(false,weekday());
-  printP(coma,b);
   printI(day()); printPiP(barra, month(), barra); printIP(year(),b);
   if (hour()<10) printP(cero); printI(hour()); printP(dp);
   if (minute()<10) printP(cero); printI(minute()); printP(dp);
@@ -292,13 +300,13 @@ void ICACHE_FLASH_ATTR HtmlGetStateTime()
 {
   printColspan(2);
   printTime();
-  printP(b);
+  printP(b, c(PRG), b);
   printI(ESP.getFreeHeap());
   printP(td_f);
 }
 
 char* ICACHE_FLASH_ATTR textonoff(float valor)
-{ if (valor==1) return (char *)"ON"; else return (char *)"OFF";  }
+{ if (valor==1) return "ON"; else return "OFF";  }
 
 void ICACHE_FLASH_ATTR writeForm(PGM_P phtm)
 {
@@ -315,7 +323,7 @@ void ICACHE_FLASH_ATTR writeFooter(int texto, boolean cerrar)
   printP(menor, c(tinput), b, type, ig, comillas);
   printP(submit);                                   // submit
   printP(comillas, b, tvalue, ig, comillas);      // " value="texto
-  pt(texto);                                    
+  pt(texto);                                  
   if (cerrar) printP(comillas, b, c(onclickclose));
   printP(comillas);
   printfincampo();
@@ -326,7 +334,7 @@ void ICACHE_FLASH_ATTR writeFooter(int texto, boolean cerrar)
 
 void ICACHE_FLASH_ATTR setCookie(byte valor)
 {
-  clearmsg();
+  msg=vacio;
   printP(c(HTTP11), b);
   printP(c(t301), b, ok, crlf);
   printP(c(setcookie),dp, b);
@@ -334,23 +342,31 @@ void ICACHE_FLASH_ATTR setCookie(byte valor)
   printP(crlf,c(location), dp, b, barra, crlf);
   printP(c(cachecontrol),dp, b);
   printP(c(nocache), crlf, crlf);
-//  server.sendContent(msg);
-  serversendcontent();
-  clearmsg();
+  server.sendContent(msg);
+  msg=vacio;
 }
 
 void ICACHE_FLASH_ATTR sendOther(const char *otherURL, int param)
 {
-  clearmsg();
+  msg=vacio;
   printP(c(HTTP11),b);
   printP(c(t303),b);
   printP(c(seeother),crlf);
   printP(c(location),dp,b,otherURL);
   if (param>=0) { printP(paramn);printI(param);}
   printP(crlf,crlf);
-//  server.sendContent(msg);
-  serversendcontent();
-  clearmsg();
+  server.sendContent(msg);
+  msg=vacio;
 }
 
+void ICACHE_FLASH_ATTR printDiaSem(byte i)
+  {
+  if (i==0) printP(letraD);  
+  if (i==1) printP(letraL);  
+  if (i==2) printP(letraM);  
+  if (i==3) printP(letraX);  
+  if (i==4) printP(letraJ);  
+  if (i==5) printP(letraV);  
+  if (i==6) printP(letraS);  
+  }
 

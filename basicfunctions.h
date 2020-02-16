@@ -1,4 +1,3 @@
-
 #include <EEPROM.h>
 #include <Arduino.h>  // for type definitions
 
@@ -18,13 +17,6 @@ template <class T> int EEPROM_readAnything(int ee, T& value)
     return i;
 }
 
-void clearmsg()
-{
-  msg=vacio;
-  if (fmsg) { fmsg.close();  fmsg=SPIFFS.open(filemsg,"a"); }
-  else fmsg=SPIFFS.open(filemsg,"w");
-}
-
 boolean strcharcomp() { msg.toLowerCase(); msg.toCharArray(auxdesc, msg.length()+1); return (strcmp(auxchar,auxdesc)==0); }
 
 char* ICACHE_FLASH_ATTR readdescr(char* namefile, byte ind, byte len)
@@ -32,8 +24,8 @@ char* ICACHE_FLASH_ATTR readdescr(char* namefile, byte ind, byte len)
   File auxfile=SPIFFS.open(namefile,letrar);
   if (auxfile)
     {
-    auxfile.seek(len*(ind), SeekSet);
-    auxfile.readBytes(auxdesc,len);
+    auxfile.seek((len+2)*(ind), SeekSet);
+    auxfile.readBytes(auxdesc,len+2);
     auxfile.close();
     auxdesc[len-1]='\0';
     byte n=strlen(auxdesc);
@@ -82,18 +74,18 @@ void ICACHE_FLASH_ATTR savedescr(char* namefile, char* descr, byte ind, byte len
 {
   File auxfile=SPIFFS.open(namefile, rmas);
   if (!auxfile) return;
-  if (auxfile.seek(len*(ind), SeekSet)) 
+  if (auxfile.seek((len+2)*(ind), SeekSet)) 
     {
     for (byte i=strlen(descr);i<len-1;i++) descr[i]=' ';  
     descr[len-1]='\0';
-    auxfile.print(descr);
+    auxfile.print(descr);auxfile.print('\0');
+    auxfile.print(crlf);
     }
   auxfile.close();   
 }
 
 void ICACHE_FLASH_ATTR addlog(File fileact)
 {
-  return;
   if (day()<10) fileact.print(cero); fileact.print(day()); fileact.print(barra);
   if (month()<10) fileact.print(cero); fileact.print(month()); fileact.print(barra);
   if (year()<10) fileact.print(cero); fileact.print(year()); fileact.print(b);
@@ -104,8 +96,7 @@ void ICACHE_FLASH_ATTR addlog(File fileact)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 {
-  return;
-  File auxfile=SPIFFS.open(filelog,"a+");
+  File auxfile=SPIFFS.open("/log.txt","a+");
   if (auxfile)  
     { 
     if (day()<10) auxfile.print(cero); auxfile.print(day()); auxfile.print(barra);
@@ -122,7 +113,7 @@ void ICACHE_FLASH_ATTR addlog(byte tipo, int code, char *texto)
 
 void ICACHE_FLASH_ATTR addlog(byte tipo, int code, PGM_P texto)
 {
-  return;
+//  File auxfile=SPIFFS.open("/log.txt",amas);
   File auxfile=SPIFFS.open("/log.txt","a+");
   if (auxfile)  
     { 
@@ -147,21 +138,11 @@ String ICACHE_FLASH_ATTR extrae(boolean eschar, String cad, String subcad)
   { subcad.concat("\"");
     return cad.substring(cad.indexOf(subcad)+subcad.length()+(eschar?2:1), cad.indexOf(",",cad.indexOf(subcad))-(eschar?1:0));      }
 
-char* ICACHE_FLASH_ATTR ftoa(int valor, int dec)
-{  
-  static char buff1[10];
-  char buff2[10];
-  itoa(valor/10,buff1,10);
-  itoa(valor%10,buff2,10);
-  strcat(buff1,".");
-  strcat(buff1,buff2);
-  return buff1;
-}  
-
 void ICACHE_FLASH_ATTR tictac(int pin, int n, int delayed)
-  { for (int i=0;i<n;i++) {digitalWrite(pin,1); delay(delayed); digitalWrite(pin, 0); delay(delayed);} }
+  { for (int i=0;i<n;i++) 
+    {digitalWrite(pin,1); delay(delayed); digitalWrite(pin, 0); delay(delayed);} }
 
-void ICACHE_FLASH_ATTR printconceros(int value)  { Serial.print(value<10?0:value); }
+void ICACHE_FLASH_ATTR printconceros(int value)  {  if (value<10) Serial.print(0); Serial.print(value); }
 
 void ICACHE_FLASH_ATTR printhora() {
   printconceros(hour()); Serial.print(dp);
@@ -196,7 +177,10 @@ void ICACHE_FLASH_ATTR printlinea(PGM_P texto) { for (byte i=0;i<20;i++) Serial.
 
 void ICACHE_FLASH_ATTR createhost(byte ip)
 {
-  strcpy(host,hostraiz); strcat(host, itoa(ip, buff, 10));
+  strcpy(host,hostraiz); 
+  strcat(host,itoa(conf.netseg, buff, 10)); 
+  strcat(host,punto); 
+  strcat(host, itoa(ip, buff, 10));
 }
 
 void calcindices(int i)
@@ -212,24 +196,21 @@ int callhttpGET(char *host, int port, boolean readresp, unsigned long timeout)
 {
   HTTPClient http;
   http.begin(host,port,msg);
-  http.setTimeout(timeout);
+  http.setConnectTimeout(timeout);
   int httpCode=http.GET();
-  clearmsg();
+  msg="";
   if (readresp) if(httpCode==HTTP_CODE_OK) { msg=http.getString(); }
   http.end();
   return httpCode;
 }
 
 boolean checkfile(char* namefile)
-{  if (!SPIFFS.exists(namefile)) 
-  { Serial.print(namefile); Serial.println(PSTR(" no existe")); return false; }  return true; }
+{  if (!SPIFFS.exists(namefile)) { Serial.print(namefile); Serial.println(" no existe"); return false; }  return true; }
 
 boolean checkfiles()
 {
   boolean auxB=true;
   auxB=auxB && checkfile(fileconf); 
-  auxB=auxB && checkfile(filehtmlhead); 
-  auxB=auxB && checkfile(fileajaxscript); 
   auxB=auxB && checkfile(filezonas);
   auxB=auxB && checkfile(filedevrem);
   auxB=auxB && checkfile(filesalrem); 
@@ -240,7 +221,6 @@ boolean checkfiles()
   auxB=auxB && checkfile(filemacdevrem); 
   auxB=auxB && checkfile(fileidmyjsonrem); 
   auxB=auxB && checkfile(fileunitsalrem); 
-  auxB=auxB && checkfile(fileurl); 
   auxB=auxB && checkfile(filedesclocal); 
   auxB=auxB && checkfile(filedesctemp); 
   auxB=auxB && checkfile(filei2ctypes); 
@@ -251,30 +231,7 @@ boolean checkfiles()
   return auxB;
 }
 
-void ICACHE_FLASH_ATTR printP(PGM_P texto) 
-{ if (fmsg) { char c; while ((c = pgm_read_byte(texto++))) fmsg.print(c); } }
-
-void ICACHE_FLASH_ATTR printS(String texto) 
-{ if (fmsg) { fmsg.print(texto); } }
-
-void ICACHE_FLASH_ATTR printPc(char michar) 
-{ if (fmsg) fmsg.print(michar); }
-
-void printPfile(char * namefile)
-{
-  File f=SPIFFS.open(namefile,"r");
-  if (f)  
-    {
-    char auxb[1];
-    for (int i=0;i<f.size();i++) 
-      { 
-      f.readBytes(auxb,1);
-      printPc(auxb[0]);
-      }
-    f.close();
-    }
-}
-
+void ICACHE_FLASH_ATTR printP(PGM_P texto1) { char c;  while ((c = pgm_read_byte(texto1++))) msg += c; }
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2) { printP(texto1); printP(texto2);}
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2, PGM_P texto3) { printP(texto1, texto2); printP(texto3);}
 void ICACHE_FLASH_ATTR printP(PGM_P texto1, PGM_P texto2, PGM_P texto3, PGM_P texto4)
@@ -298,7 +255,9 @@ void ICACHE_FLASH_ATTR printIP(long valor, const  char *texto) { printI(valor); 
 void ICACHE_FLASH_ATTR printPiP(const char *texto1, int num, const char *texto2)
   { printP(texto1); printI(num); printP(texto2);}
 
-///////////////////////////////////////////////////////////////////////////////////////
+
+
+
 bool ICACHE_FLASH_ATTR autOK()
 {
   return true;      // provisional
@@ -357,9 +316,12 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(table, b);
   printP(c(tclass));
   printP(ig, tmenu, mayor, tr); // formato menú
-  printOpc(false, (opcprin==1), t(zonas), panelhtm); // PANEL
+  if (conf.modobc==0)
+    printOpc(false, (opcprin==1), t(zonas), panelhtm); // PANEL
+  else if (conf.modobc==1)
+    printOpc(false, (opcprin==1), c(panel), panelhtm); // Bomba de calor
   printOpc(false, (opcprin==3), t(configuracion), sdhtm); // CONFIGURACIÓN
-  printOpc(false, (opcprin==2), t(programas), sprghtm); // Programas
+  if (conf.modobc==0) printOpc(false, (opcprin==2), t(programas), sprghtm); // Programas
   printOpc(false, (opcprin==4), t(sistema), espsyshtm); // Sistema
 
   if (conf.usepassDev)
@@ -377,34 +339,38 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(tmenu, mayor, tr);  // formato menú
   if (opcprin == 1) // PANELES
     {
-    for (byte i=0; i<maxpaneles; i++)
-      if (getbit8(conf.bshowpanel, i))
-        printOpc(false, opcsec==i, readdescr(filezonas, i, 20), panelhtm, i);
+    if (conf.modobc!=1) 
+      {
+      for (byte i=0; i<maxpaneles; i++)
+        if (getbit8(conf.bshowpanel, i))
+          printOpc(false, opcsec==i, readdescr(filezonas, i, 20), panelhtm, i);
+      }
     }
   else if (opcprin==2) // PROGRAMACIÓN
     {
-    printOpc(false, opcsec==5, t(programas), sprghtm);
-    printOpc(false, opcsec==1, t(semanal), ssehtm);
-    printOpc(false, opcsec==2, t(condiciones), svhtm);
-    printOpc(false, opcsec==3, t(fecha), sfhtm);
-    printOpc(false, opcsec==4, t(escenas), seschtm);
-    printOpc(false, opcsec==7, t(webcalls), swchtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==5, t(programas), sprghtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==1, t(semanal), ssehtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==2, t(condiciones), svhtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==3, t(fecha), sfhtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==4, t(escenas), seschtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==7, t(webcalls), swchtm);
     }
   else if (opcprin==3) // CONFIGURACIÓN
     {
     printOpc(false, opcsec==0, t(dispositivo), sdhtm);
-    printOpc(false, opcsec==5, t(zonas), sphtm);
-    printOpc(false, opcsec==2, t(mandorf), rfhtm);
-    printOpc(false, opcsec==3, t(red), snehtm);
+    if (conf.modobc==0) printOpc(false, opcsec==5, t(zonas), sphtm);
+    if (conf.modobc==0) printOpc(false, opcsec==2, t(mandorf), rfhtm);
+    printOpc(false, opcsec==3, t(tred), snehtm);
     printOpc(false, opcsec==4, t(servred), snshtm);
-    printOpc(false, opcsec==1, c(senales), siohtm);
-    printOpc(false, opcsec==10, t(remotos), slkhtm);
-    printOpc(false, opcsec==11, c(salremotas), sremhtm);
+    if (conf.modobc==0) printOpc(false, opcsec==1, c(senales), siohtm);
+    if (conf.modobc==0) printOpc(false, opcsec==10, t(remotos), slkhtm);
+    if (conf.modobc==0) printOpc(false, opcsec==11, c(salremotas), sremhtm);
+    if (conf.modobc==1) printOpc(false, opcsec==12, t(bombacalor), sbhtm);
     }
   else if (opcprin==4) // SISTEMA
     {
     printOpc(false, opcsec==4, t(statust), espsyshtm);
-    printOpc(false, opcsec==3, t(files), fileshtm);
+    if (conf.modobc!=1) printOpc(false, opcsec==3, t(files), fileshtm);
     printOpc(false, opcsec==5, t(seguridad), sshtm);
     printOpc(false, opcsec==1, t(actualizar), suhtm);
     printOpc(false, opcsec==2, treset, rshtm);
@@ -412,65 +378,7 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(tr_f, menor, barra, table, mayor, br);
 }
 
-void serversendcontent()
-{
-  fmsg.close();   // cierra fichero que estaba en escritura
-  fmsg=SPIFFS.open(filemsg,"r");
-  if (fmsg)  
-    {
-    char auxb[1];
-    for (int i=0;i<fmsg.size();i++) 
-      { 
-      fmsg.readBytes(auxb,1);
-      server.sendContent(String(auxb[0]));
-      }
-    fmsg.close();
-    }
-}
-
-void ICACHE_FLASH_ATTR serversend200() 
-{ 
-  fmsg.close();   // cierra fichero que estaba en escritura
-  fmsg=SPIFFS.open(filemsg,"r");
-  if (fmsg)  
-    {
-    int nsend=fmsg.size();
-    server.setContentLength(nsend);
-    server.send(200,texthtml,vacio);  // no se envía nada
-    for (int i=0;i<nsend/bufsizechar;i++) 
-      { 
-      fmsg.readBytes(auxchar,bufsizechar); 
-      auxchar[bufsizechar]='\0';
-      server.sendContent(String(auxchar));
-      }
-    // resto 
-    fmsg.readBytes(auxchar,nsend%bufsizechar);
-    auxchar[nsend%bufsizechar]='\0';
-    server.sendContent(String(auxchar));
-    fmsg.close();
-    }
-  clearmsg(); 
-}
-
-void ICACHE_FLASH_ATTR serversend404() 
-{ 
-  fmsg.close();   // cierra fichero que estaba en escritura
-  fmsg=SPIFFS.open(filemsg,"r");
-  if (fmsg)  
-    {
-    server.setContentLength(fmsg.size());
-    server.send(404,textplain,vacio);
-    char auxb[1];
-    for (int i=0;i<fmsg.size();i++) 
-      { 
-      fmsg.readBytes(auxb,1);
-      server.sendContent(String(auxb[0]));
-      }
-    fmsg.close();
-    }
-  clearmsg(); 
-}
-
+void ICACHE_FLASH_ATTR serversend200() { server.send(200, texthtml, msg); msg=vacio; }
 void ICACHE_FLASH_ATTR printtiempo(unsigned long segundos)
 {
   if (segundos < 60)  {
@@ -500,4 +408,18 @@ void ICACHE_FLASH_ATTR printtiempo(unsigned long segundos)
     }
 }
 
-
+boolean gpiovis(byte i)
+  {
+  boolean auxgpiovis=true;
+  if (i==0) auxgpiovis=(conf.TX433enabled==0);
+  else if (i==1) auxgpiovis=(conf.RX433enabled==0);
+  else if (i==2) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
+  else if (i==3) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
+  else if (i==4) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
+  else if (i==5) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
+  else if (i==6) auxgpiovis=(conf.I2Cenabled==0);
+  else if (i==7) auxgpiovis=(conf.I2Cenabled==0);
+//  else if (i==8) auxgpiovis=(conf.TFTenabled==0);
+//  else if (i==9) auxgpiovis=(conf.TFTenabled==0);
+  return auxgpiovis;  
+  }
