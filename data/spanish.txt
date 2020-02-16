@@ -107,19 +107,9 @@ Hist.
 1-31:MB, 150-166:Conuco, Resto:I2C      
 No hacer nada                           
 Falta algún fichero necesarios<br>      
-Use FTP o \"Sketch Data Upload\"<br>    
+Use FTP o \"Sketch Data Upload          
 Guardar/Exportar                        
 Idioma                                  
-Domingo                                 
-Lunes                                   
-Martes                                  
-Miércoles                               
-Jueves                                  
-Viernes                                 
-Sábado                                  
-                                       .
-                                       .
-                                       .
-                                       .
-                                       .
-                                       .
+Bomba Calor                             
+                                        
+                                        

@@ -87,7 +87,7 @@ Temperature
 Thermostat                              
 TDP                                     
 Timeout Remotes                         
-Type                                    
+Tipe                                    
 Last value                              
 Unit                                    
 User                                    
@@ -102,18 +102,16 @@ WiFi mode
 Zone                                    
 Zones                                   
 FTP server                              
-Instalation                             
+Installation                             
 Hyst.                                   
 1-31:MB, 150-166:Conuco, Resto:I2C      
-Nothing to do                           
-Files not found<br>                     
-Use FTP o \"Sketch Data Upload\"<br>    
+No hacer nada                           
+Falta algún fichero necesarios<br>      
+Use FTP o \"Sketch Data Upload                                        
 Save/Export                             
 Language                                
-Sunday                                  
-Monday                                  
-Tuesday                                 
-Wednesday                               
-Thursday                                
-Friday                                  
-Saturday                                
+Heat Pump                               
+                                        
+                                        
+                                        
+                                        
