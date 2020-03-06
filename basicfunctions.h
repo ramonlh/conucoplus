@@ -316,12 +316,12 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(table, b);
   printP(c(tclass));
   printP(ig, tmenu, mayor, tr); // formato menú
-  if (conf.modobc==0)
+  if (conf.modofi==0)
     printOpc(false, (opcprin==1), t(zonas), panelhtm); // PANEL
-  else if (conf.modobc==1)
+  else if (conf.modofi==1)
     printOpc(false, (opcprin==1), c(panel), panelhtm); // Bomba de calor
   printOpc(false, (opcprin==3), t(configuracion), sdhtm); // CONFIGURACIÓN
-  if (conf.modobc==0) printOpc(false, (opcprin==2), t(programas), sprghtm); // Programas
+  if (conf.modofi==0) printOpc(false, (opcprin==2), t(programas), sprghtm); // Programas
   printOpc(false, (opcprin==4), t(sistema), espsyshtm); // Sistema
 
   if (conf.usepassDev)
@@ -339,7 +339,7 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
   printP(tmenu, mayor, tr);  // formato menú
   if (opcprin == 1) // PANELES
     {
-    if (conf.modobc!=1) 
+    if (conf.modofi!=1) 
       {
       for (byte i=0; i<maxpaneles; i++)
         if (getbit8(conf.bshowpanel, i))
@@ -348,29 +348,29 @@ void ICACHE_FLASH_ATTR writeMenu(byte opcprin, byte opcsec)
     }
   else if (opcprin==2) // PROGRAMACIÓN
     {
-    if (conf.modobc!=1) printOpc(false, opcsec==5, t(programas), sprghtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==1, t(semanal), ssehtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==2, t(condiciones), svhtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==3, t(fecha), sfhtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==4, t(escenas), seschtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==7, t(webcalls), swchtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==5, t(programas), sprghtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==1, t(semanal), ssehtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==2, t(condiciones), svhtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==3, t(fecha), sfhtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==4, t(escenas), seschtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==7, t(webcalls), swchtm);
     }
   else if (opcprin==3) // CONFIGURACIÓN
     {
     printOpc(false, opcsec==0, t(dispositivo), sdhtm);
-    if (conf.modobc==0) printOpc(false, opcsec==5, t(zonas), sphtm);
-    if (conf.modobc==0) printOpc(false, opcsec==2, t(mandorf), rfhtm);
+    if (conf.modofi==0) printOpc(false, opcsec==5, t(zonas), sphtm);
+    if (conf.modofi==0) printOpc(false, opcsec==2, t(mandorf), rfhtm);
     printOpc(false, opcsec==3, t(tred), snehtm);
     printOpc(false, opcsec==4, t(servred), snshtm);
-    if (conf.modobc==0) printOpc(false, opcsec==1, c(senales), siohtm);
-    if (conf.modobc==0) printOpc(false, opcsec==10, t(remotos), slkhtm);
-    if (conf.modobc==0) printOpc(false, opcsec==11, c(salremotas), sremhtm);
-    if (conf.modobc==1) printOpc(false, opcsec==12, t(bombacalor), sbhtm);
+    if (conf.modofi==0) printOpc(false, opcsec==1, c(senales), siohtm);
+    if (conf.modofi==0) printOpc(false, opcsec==10, t(remotos), slkhtm);
+    if (conf.modofi==0) printOpc(false, opcsec==11, c(salremotas), sremhtm);
+    if (conf.modofi==1) printOpc(false, opcsec==12, t(bombacalor), sbhtm);
     }
   else if (opcprin==4) // SISTEMA
     {
     printOpc(false, opcsec==4, t(statust), espsyshtm);
-    if (conf.modobc!=1) printOpc(false, opcsec==3, t(files), fileshtm);
+    if (conf.modofi!=1) printOpc(false, opcsec==3, t(files), fileshtm);
     printOpc(false, opcsec==5, t(seguridad), sshtm);
     printOpc(false, opcsec==1, t(actualizar), suhtm);
     printOpc(false, opcsec==2, treset, rshtm);
@@ -411,15 +411,15 @@ void ICACHE_FLASH_ATTR printtiempo(unsigned long segundos)
 boolean gpiovis(byte i)
   {
   boolean auxgpiovis=true;
-  if (i==0) auxgpiovis=(conf.TX433enabled==0);
-  else if (i==1) auxgpiovis=(conf.RX433enabled==0);
-  else if (i==2) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
-  else if (i==3) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
-  else if (i==4) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
-  else if (i==5) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));
-  else if (i==6) auxgpiovis=(conf.I2Cenabled==0);
-  else if (i==7) auxgpiovis=(conf.I2Cenabled==0);
-//  else if (i==8) auxgpiovis=(conf.TFTenabled==0);
-//  else if (i==9) auxgpiovis=(conf.TFTenabled==0);
-  return auxgpiovis;  
+  if      (i==0) auxgpiovis=(conf.TX433enabled==0);                            // GPIO 02
+  else if (i==1) auxgpiovis=(conf.RX433enabled==0);                            // GPIO 04
+  else if (i==2) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));    // GPIO 12
+  else if (i==3) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));    // GPIO 13
+  else if (i==4) auxgpiovis=((conf.SPIenabled==0) && (conf.TFTenabled==0));    // GPIO 14
+  else if (i==5) auxgpiovis=false;    // no se puede usar con facilidad        // GPIO 15
+  else if (i==6) auxgpiovis=((conf.I2Cenabled==0) && (conf.TFTenabled==0));    // GPIO 21
+  else if (i==7) auxgpiovis=((conf.I2Cenabled==0) && (conf.SERIAL2enabled==0));// GPIO 22
+  else if (i==8) auxgpiovis=(conf.SERIAL2enabled==0) ;                         // GPIO 32
+  else if (i==9) auxgpiovis=false;   // no se puede usar  con facilidad        // GPIO 33
+  return auxgpiovis;   
   }

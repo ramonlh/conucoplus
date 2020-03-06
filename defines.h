@@ -25,6 +25,7 @@
   #define maxpaneles 10   // número máximo de paneles
   #define maxsensortype 30 
   #define maxtftpages 6
+  #define maxAP 9
   
   // 
   #define I0 36    // OK    // Inputs
@@ -32,42 +33,23 @@
   #define I2 34    // OK  
   #define I3 35    // OK  
 
-  #define O0 17    // OK  Relé 1
-  #define O1 23    // OK  Relé 2     
-  #define O2 22    // OK  ¡JUMPER!   (SCL)         
-  #define O3 21    // OK  ¡JUMPER!   (SDA)
-  #define O4 19    // OK  
+  #define O0 17    // OK  Outputs Relé 1
+  #define O1 23    // OK          Relé 2     
+  #define O2 25    // OK          Relé 3 a partir de PCB v4          
+  #define O3 27    // OK          Relé 4 a partir de PCB v4
+  #define O4 19    // OK    
   #define O5 5     // OK          
   #define O6 18    // OK            
-  #define O7 16    // OK      
+  #define O7 16    // OK          Relé 8
   
-  #define TX 1           // UART1 
-  #define RX 3
-  #define RXD2 4        // UART2
-  #define TXD2 2
-  #define SPIMISO 12      // SPI
-  #define SPIMOSI 13
-  #define SPICLK 14
-  #define SPICS 15
+  #define W0 26    // 1 wire port 
 
-  #define SDA 21          // I2C-SDA / O2
-  #define SCL 22          // I2C-SCL / O3
-
-  #define W0 26          // 1 wire port 
-
-  #define RX433 21
-  #define TX433 22     
-
-  #define TFT_CS 15
-  #define TFT_DC 21
-  #define TFT_MOSI 13
-  #define TFT_CLK 14 
-  #define TFT_RSTxxx 22
-  #define TFT_MISO 12
-
-  #define TS_CS 33
-
-  #define baseAna 8
+//  #define TX 1   // UART1 
+//  #define RX 3
+  #define RXD2 22  // UART2
+  #define TXD2 32
+  #define RX433 4 
+  #define TX433 2     
 
 ////////////////////////////////
 #define nEVE 8          // número de eventos

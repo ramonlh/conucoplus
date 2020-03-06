@@ -255,7 +255,10 @@ void ICACHE_FLASH_ATTR printcampoCB(int numpar, int valact, PGM_P t0, PGM_P t1, 
 
 void printaddr1Wire(byte i)
 {
-  for (uint8_t j=0;j<8;j++) { printH(conf.probecode[i][j]); } 
+  if (conf.nprobe[i]==0)
+    printP("No probe");
+  else
+    for (uint8_t j=0;j<8;j++) { printH(conf.probecode[i][j]); } 
 }
 
 void ICACHE_FLASH_ATTR selectProbe(int numpar, int valact, boolean printtd)
@@ -268,12 +271,10 @@ void ICACHE_FLASH_ATTR selectProbe(int numpar, int valact, boolean printtd)
     printPiP(comillas, i, comillas);
     if (valact==i) printselected(false);
     printP(mayor); 
-    if (i<nTemp) {
-      for (uint8_t j=0;j<8;j++) 
-        { if (addr1Wire[i][j]<16) printP(cero); printH(addr1Wire[i][j]); } 
-      }
-    else
+    if (i==0)
       printP("No probe");
+    else 
+      for (uint8_t j=0;j<8;j++) { if (addr1Wire[i-1][j]<16) printP(cero); printH(addr1Wire[i-1][j]); }   
     printP(c(option_f));   }
   printP(c(select_f));
   if (printtd) printP(td_f);

@@ -38,10 +38,10 @@ typedef struct {int devori; int actualizaut; float s[3]; float a1; char ua1[4]; 
                 byte LIBRES1[10][5];              // 50 bytes, LIBRES
                 /********** variables wifi *************/
                 byte wifimode=1;                  // 1 byte, 0:STA, 1: AP (default), 2: AP+STA
-                char ssidSTA[20]="SSID_AP";       // 20 bytes, SSID en modo AP
-                char passSTA[20]="PASS_AP";       // 20 bytes, Password en modo AP
-                char ssidAP[20]="CONUCO_150";     // 20 bytes, SSID en modo STA
-                char passAP[20]="12341234";       // 20 bytes, Password en modo STA
+                char ssidSTA[20]="SSID_AP";       // 20 bytes, SSID en modo STA
+                char passSTA[20]="PASS_AP";       // 20 bytes, Password en modo STA
+                char ssidAP[20]="CONUCO_150";     // 20 bytes, SSID en modo AP
+                char passAP[20]="12341234";       // 20 bytes, Password en modo AP
                 byte pinremote[maxsalrem];        // 32 bytes, pin de cada salida remota
                 byte idsalremote[maxsalrem];      // 32 bytes, id de dispositivos de cada salida remota
                 
@@ -117,7 +117,7 @@ typedef struct {int devori; int actualizaut; float s[3]; float a1; char ua1[4]; 
                 char instname[10]="INSTAL";       // nombre de la instalación
                 byte mqttgpioenable[3]={0,0,0};   // 
                 unsigned int LIBRE2[19]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // LIBRES
-                byte modobc=0;  // modo bomba de calor = 1;
+                byte modofi=0;  // normal=0, bomba de calor = 1, radio FT817=2
                 byte ngpio[30]={26,26,26,26,26,26,26,26,36,39,34,35,17,23,34,27,19,5,18,16,0,0,0,0,0,0,0,0,0};  // pin para cada señal 8x1-wire,4xDI,8xDO, 6 libres)
                 byte tiporemote[maxdevrem]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};    // 16 bytes, tipo de cada dispositivo remoto. 0:Conuco8266, 1:conuco32
                 byte bshowbypanel[maxpaneles][7]; // 70 bytes, tabla para asignar señales a paneles
@@ -127,7 +127,7 @@ typedef struct {int devori; int actualizaut; float s[3]; float a1; char ua1[4]; 
                 byte SPIenabled=0;
                 byte I2Cenabled=0;
                 byte TFTenabled=0;
-                byte LIBRE3=0;
+                byte SERIAL2enabled=0;
                 float gpioalfa[maxgpiovar]={0,0,0,0,0,0,0,0,0,0};    // valor de alfa para cada sensor (si es preciso)
                 float gpiobeta[maxgpiovar]={0,0,0,0,0,0,0,0,0,0};    // valor de beta para cada sensor (si es preciso)
                 float gpiogamma[maxgpiovar]={0,0,0,0,0,0,0,0,0,0};    // valor de alfa para cada sensor (si es preciso)
@@ -136,18 +136,13 @@ typedef struct {int devori; int actualizaut; float s[3]; float a1; char ua1[4]; 
                 byte rstper=0;   
                 byte nprobe[maxTemp]={0,0,0,0,0,0,0,0};   // estos dos valores van aparejados
                 uint8_t probecode[maxTemp][8];            // código de sonda 
+                byte xxxxxx[8]={0,0,0,0,0,0,0,0};
                } conftype;
     conftype conf;     
     byte *buffconf = (byte *) &conf; // acceder a conf como bytes
 
     byte edPin[maxED]={I0,I1,I2,I3};                // pines entradas digitales
     byte sdPin[maxSD]={O0,O1,O2,O3,O4,O5,O6,O7};    // pines salidas digitales/relés
-//    byte anaPin[maxEA]={ADC0,ADC1};                 // pines entradas analógicas
-    byte i2cPin[2]={SDA,SCL};                       // pines I2C
-    byte spiPin[4]={SPIMISO,SPIMOSI,SPICLK,SPICS};  // pines SPI
-    byte txrxPin[2]={TX,RX};                        // pines serial port
-    byte rfPin[2]={RX433,TX433};                    // pines RF 433
-    byte owPin=W0;                                  // pin para DS18B20
     const byte listgpiovar[maxgpiovar]={2,4,12,13,14,15,21,22,32,33};
     const char idpin8266[15][4]={"t0","t1","t2","a0","e0","e1","s0","s1","id","ip","ipp","c0","c1","c2","all"}; // hasta el 8 son pines.
     const char idpin[34][4]={"t0","t1","t2","t3","t4","t5","t6","t7","e0","e1","e2","e3","s0","s1","s2","s3","s4","s5","s6","s7","x1","x2","id","ip","ipp",
@@ -308,9 +303,9 @@ char filespanish[]="/spanish.txt";
 char fileenglish[]="/english.txt";
 char filelog[]="/log.txt";
 char filedash[]="/dash.txt";
-
 char flecha[4][3]={"<","<<",">>",">"};
 byte tftpage=0;
+byte tftapactual=0;
 
 int testvalue=0;
 unsigned long tini=0;
@@ -318,4 +313,5 @@ String sinput="";
 ////////////////////////////////////////
 const byte maxbt817=2;
 
+///////////////// variables bomba de calor
 

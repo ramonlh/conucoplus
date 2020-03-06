@@ -394,10 +394,17 @@ void ICACHE_FLASH_ATTR leevaloresGPIO()
   for (byte i=0;i<maxgpiovar;i++)
     if (gpiovis(i))
       {
-      if (conf.gpiosensortype[i]==2)      // ADC
+      if (conf.gpiosensortype[i]==0)     // Entr. digitales
+        {
+        setbit8(conf.MbC8gpio,i+16,digitalRead(listgpiovar[i])); 
+        }
+      else if (conf.gpiosensortype[i]==1)       //  Sal. digitales
+        {
+        setbit8(conf.MbC8gpio,i,digitalRead(listgpiovar[i])); 
+        }
+      else if (conf.gpiosensortype[i]==2)      // ADC
         {
         MbRgpio[i]=analogRead(listgpiovar[i]); 
-        tft.drawNumber(i,85+(i*15),200);
         MbRantgpio[i]=MbRgpio[i];   
         }
       else if (conf.gpiosensortype[i]==5)   // Jonshon Controls PT1000, 1035 a 25º, B= , A99 
@@ -451,12 +458,14 @@ void ICACHE_FLASH_ATTR leevaloresOW()
 {
   sensors0.requestTemperatures();
   for (byte i=0; i<maxTemp; i++)  
-    if (conf.nprobe[i]<nTemp)
+    {
+    if (conf.nprobe[i]>0)
       {
       int auxI=sensors0.getTempC(conf.probecode[i])*100;
       MbR[i]=auxI;
       MbRant[i]=MbR[i];
       }
+    }
 }
 
 void ICACHE_FLASH_ATTR loginHTML()
@@ -688,6 +697,35 @@ void ICACHE_FLASH_ATTR onescena(byte nesc)
     }
 }
 
+void HtmlGetStateOut(byte tipo, byte ind)
+{
+  if (tipo==0) colorea=(getbit8(conf.MbC8, ind)==1);
+  else colorea=(getbit8(conf.MbC8gpio, ind)==1);
+  unsigned long segundos=0;
+  if (tipo==0)
+    {
+    segundos = (millis()/1000)-(colorea?tempact[ind]:tempdes[ind]);
+    printP(colorea?th:td, href_i,comilla, colorea?off:on,interr, letrap);
+    printP(ig);
+    printI(ind);
+    printP(amper,letran,ig);
+    printI(conf.iddevice);
+    printP(comilla, mayor,readdescr(filedesclocal,ind+12,20),href_f,colorea?th_f:td_f,td);
+    }
+  else
+    {
+    segundos = (millis()/1000)-(colorea?tempactgpio[ind]:tempdesgpio[ind]);
+    printP(colorea?th:td, href_i,comilla, colorea?off:on,interr, letrap);
+    printP(ig);
+    printI(ind+10);
+    printP(amper,letran,ig);
+    printI(conf.iddevice);
+    printP(comilla, mayor,readdescr(filedescgpio,ind,20),href_f,colorea?th_f:td_f,td);
+    }
+  printtiempo(segundos);
+  printP(td_f);
+}
+
 void ICACHE_FLASH_ATTR onCmd()
 {
   if (autOK())
@@ -695,7 +733,10 @@ void ICACHE_FLASH_ATTR onCmd()
       {
       byte auxi=server.arg(0).toInt();
       if (auxi<20)
+        {
         pinVAL(auxi, 1, server.arg(1).toInt());   // tercer parámetro es el Id ori que lo pide
+   //     HtmlGetStateOut(0, auxi);
+        }
       else if (auxi <= 200)
         onescena(auxi - 100);
       }
@@ -710,6 +751,7 @@ void ICACHE_FLASH_ATTR offCmd()
       byte auxi=server.arg(0).toInt();
       if (auxi<20)
         pinVAL(auxi, 0, server.arg(1).toInt());
+  //    HtmlGetStateOut(0, auxi);
       }
   sendOther(panelhtm, panelact);
 }
@@ -926,7 +968,7 @@ void HtmlGetStateTemp(byte tipo, byte i)
   if (tipo==0)
     {
     printP(b, readdescr(filedesclocal,i,20), td_f, td);
-    printF(MbR[i]*0.01,2);
+    printF(MbR[i]*0.01,1);
     printP(b, celsius, td_f);
     }
   else if (tipo==1)         // PT1000 o NTC
@@ -979,35 +1021,6 @@ void HtmlGetStateIn(byte tipo, byte ind)    // tipos: 0=ED, 1=GPIO como ED
   else printP(readdescr(filedescgpio,ind,20));
   printP(href_f,colorea?th_f:td_f);
   cell(tipo==0?conf.contadores[ind]:conf.contadoresgpio[ind]);
-}
-
-void HtmlGetStateOut(byte tipo, byte ind)
-{
-  if (tipo==0) colorea=(getbit8(conf.MbC8, ind)==1);
-  else colorea=(getbit8(conf.MbC8gpio, ind)==1);
-  unsigned long segundos=0;
-  if (tipo==0)
-    {
-    segundos = (millis()/1000)-(colorea?tempact[ind]:tempdes[ind]);
-    printP(colorea?th:td, href_i,comilla, colorea?off:on,interr, letrap);
-    printP(ig);
-    printI(ind);
-    printP(amper,letran,ig);
-    printI(conf.iddevice);
-    printP(comilla, mayor,readdescr(filedesclocal,ind+12,20),href_f,colorea?th_f:td_f,td);
-    }
-  else
-    {
-    segundos = (millis()/1000)-(colorea?tempactgpio[ind]:tempdesgpio[ind]);
-    printP(colorea?th:td, href_i,comilla, colorea?off:on,interr, letrap);
-    printP(ig);
-    printI(ind+10);
-    printP(amper,letran,ig);
-    printI(conf.iddevice);
-    printP(comilla, mayor,readdescr(filedescgpio,ind,20),href_f,colorea?th_f:td_f,td);
-    }
-  printtiempo(segundos);
-  printP(td_f);
 }
 
 void handleStateTime() { msg=vacio; HtmlGetStateTime(); serversend200();  }
@@ -1389,91 +1402,13 @@ void ICACHE_FLASH_ATTR panelHTML() {
   serversend200();
 }
 
-void ICACHE_FLASH_ATTR panelhpHTML() {
-  printremote();
-  boolean conectado = (autOK());
-  msg=vacio;
-  if (server.method()==HTTP_POST) return; 
-  writeHeader(false,true);
-  byte auxI=server.arg(0).toInt();
-  panelact=auxI;
-  writeMenu(1, auxI);
-  printP(menor, table);
-  printP(b, c(tclass), ig, tpanel, mayor, tr);
-  printColspan(2);
-  printP(readdescr(filezonas, auxI, 20), td_f, tr_f);
-
-  /////////////  CONTENIDO   ///////////
-  if (conectado)
-    {
-
-  // TEMPERATURAS DS18B20 Locales
-  for (byte i=0; i<maxTemp; i++)
-    if (getbit8(conf.bshowbypanel[auxI],i))
-      {
-      printP(menor,letrat,letrar,b);
-      printP(c(tid),ig,comilla,letrat,letrae);
-      printI(i);
-      printP(comilla,mayor);
-      HtmlGetStateTemp(0,i);
-      printP(tr_f);
-      }
-
-  // ENTRADAS ANALÓGICAS
-  for (byte i=0;i<maxEA;i++)
-    if (getbit8(conf.bshowbypanel[auxI], i+8))
-      {
-      printP(tr, td);
-      if (conf.showN) printparentesis(letraa, i);
-      printP(readdescr(filedesclocal, i+8, 20), td_f, td);
-      printF((MbR[baseAna+i]*conf.factorA[i]) + conf.offsetA[i], 2);
-      printP(b, conf.unitpinA[i], td_f, tr_f);
-      }
-
-  // ENTRADAS DIGITALES
-  for (byte i=0; i<maxED; i++)
-    if (getbit8(conf.bshowbypanel[auxI], i+10))
-      if (conf.tipoED[i]<=1)  // entrada digital ON/OFF o OFF/ON (puede ser DHT)
-        {
-        printP(menor, letrat, letrar, b);
-        printP(c(tid), ig, comilla, letral); 
-        printI(i);
-        printP(comilla, mayor);
-        HtmlGetStateIn(0,i);
-        printP(tr_f);
-        }
-    }
-
-  // SALIDAS DIGITALES
-  if (conectado)
-    {
-    for (byte i=0;i<maxSD;i++)
-      if (getbit8(conf.bshowbypanel[auxI], i+14))
-        {
-        printP(menor, "tr", b);
-        printP(c(tid), ig, comilla, letral); 
-        printI(i+4);
-        printP(comilla, mayor);
-        HtmlGetStateOut(0,i);
-        printP(tr_f);
-        }
-    }
-
-  // final
-  printP(menor,letrat,letrar,b,c(tid));
-  printP(ig,comilla,letrat,letrat,comilla,mayor);
-  HtmlGetStateTime();
-  printP(tr_f, menor, barra, table, mayor);
-  printP(c(body_f), menor, barra,thtml, mayor);
-  serversend200();
-}
 
 void ICACHE_FLASH_ATTR indexHTML() 
   {
-  if (conf.modobc==1) panelhpHTML(); 
-  else if (conf.modobc==2) panelHTML();
-  else if (conf.modoterm==0) panelHTML(); 
-  else termostatoHTML(); 
+  if (conf.modofi==0)
+    { if (conf.modoterm==0) panelHTML();  else termostatoHTML();   }
+  else if (conf.modofi==1) panelHTML(); 
+  else if (conf.modofi==2) panelHTML();
   }
 
 void ICACHE_FLASH_ATTR AddOri(byte numori)
@@ -1990,6 +1925,7 @@ void ICACHE_FLASH_ATTR setupsalremHTML()
   serversend200();
 }
 
+
 void ICACHE_FLASH_ATTR setupioHTML()
 {
   printremote();
@@ -2005,7 +1941,7 @@ void ICACHE_FLASH_ATTR setupioHTML()
     for (int i=0  ;i<server.args(); i++)
       {
       calcindices(i);
-      if (indice<=7)  // temperaturas
+      if (indice<8)  // temperaturas
         {
         if (resto==0) { server.arg(i).toCharArray(auxdesc, 20); savedescr(filedesclocal,auxdesc,indice,20); }
         else if (resto==1) { setbit8(conf.mqttsalenable,indice,1); }
@@ -2014,8 +1950,7 @@ void ICACHE_FLASH_ATTR setupioHTML()
         else if (resto==4) { conf.accsetpoint[indice]=server.arg(i).toInt(); }  // acción consigna
         else if (resto==5)    // número y código de sonda
           { 
-          if (server.arg(i).toInt()==nTemp) conf.nprobe[indice]=8;
-          else conf.nprobe[indice]=server.arg(i).toInt();
+          conf.nprobe[indice]=server.arg(i).toInt();
           for (byte j=0;j<8;j++) conf.probecode[indice][j]=addr1Wire[server.arg(i).toInt()][j];
           } 
         }
@@ -2297,7 +2232,7 @@ void ICACHE_FLASH_ATTR setupDevHTML()
     {
     conf.showN=0; conf.modoterm=0; conf.actualizaut=0;
     conf.RX433enabled=0; conf.TX433enabled=0; conf.SPIenabled=0;
-    conf.I2Cenabled=0; conf.TFTenabled=0;
+    conf.I2Cenabled=0; conf.TFTenabled=0; conf.SERIAL2enabled=0;
     for (int i=0; i<server.args(); i++)
       {
       calcindices(i);
@@ -2320,13 +2255,14 @@ void ICACHE_FLASH_ATTR setupDevHTML()
       else if (param_number==17) { conf.actualizaut=server.arg(i).toInt(); } // actualización automática
       else if (param_number==18) { server.arg(i).toCharArray(conf.fwUrlBase, server.arg(i).length()+1); }  // fwUrlBase
       else if (param_number==20) { conf.lang = server.arg(i).toInt(); } // idioma
-      else if (param_number==21) { conf.modobc = server.arg(i).toInt(); } // modo normal/bomba de calor
-      else if (param_number==22) { conf.RX433enabled = server.arg(i).toInt(); } // modo normal/bomba de calor
-      else if (param_number==23) { conf.TX433enabled = server.arg(i).toInt(); } // modo normal/bomba de calor
-      else if (param_number==24) { conf.SPIenabled = server.arg(i).toInt(); } // modo normal/bomba de calor
-      else if (param_number==25) { conf.I2Cenabled = server.arg(i).toInt(); } // modo normal/bomba de calor
-      else if (param_number==26) { conf.TFTenabled = server.arg(i).toInt(); } // modo normal/bomba de calor
+      else if (param_number==21) { conf.modofi = server.arg(i).toInt(); } // modo normal/bomba de calor/radio
+      else if (param_number==22) { conf.RX433enabled = server.arg(i).toInt(); } // 
+      else if (param_number==23) { conf.TX433enabled = server.arg(i).toInt(); } // 
+      else if (param_number==24) { conf.SPIenabled = server.arg(i).toInt(); } // 
+      else if (param_number==25) { conf.I2Cenabled = server.arg(i).toInt(); } // 
+      else if (param_number==26) { conf.TFTenabled = server.arg(i).toInt(); } // 
       else if (param_number==27) { conf.rstper = server.arg(i).toInt(); } // período rset automatico
+      else if (param_number==28) { conf.SERIAL2enabled = server.arg(i).toInt(); } // 
       }
     saveconf();
     readconf();
@@ -2369,7 +2305,11 @@ void ICACHE_FLASH_ATTR setupDevHTML()
 
   printP(conf.I2Cenabled?th:td,"I2C");  
   checkBox(25, conf.I2Cenabled,false);
-  printP(conf.I2Cenabled?th_f:td_f,td,td_f,td,td_f,tr_f);
+  printP(conf.I2Cenabled?th_f:td_f);
+
+  printP(conf.SERIAL2enabled?th:td,"Serial 2");  
+  checkBox(28, conf.SERIAL2enabled,false);
+  printP(conf.SERIAL2enabled?th_f:td_f,td,td_f,tr_f);
 
   printP(tr,td);
   pt(aut);
@@ -2410,7 +2350,7 @@ void ICACHE_FLASH_ATTR setupDevHTML()
   printP(tr, td, t(idioma),td_f);
   printcampoCB(20, conf.lang, PSTR("Español"), PSTR("English"),true); 
   printP(td_f,td, t(Modo),td_f);
-  printcampoCB(21, conf.modobc, PSTR("Normal"), PSTR("Bomba de calor"), PSTR("Radio FT-817"), true); 
+  printcampoCB(21, conf.modofi, PSTR("Normal"), PSTR("Bomba de calor"), PSTR("Radio FT-817"), true); 
   printP(td_f,tr_f);
 
   printP(tr, td, "Reset periodico (horas)",td_f,td);
@@ -2812,7 +2752,7 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
     WiFi.begin("CONUCO_150", t12341234, true);
     byte cont = 0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-    while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto);  }
+    while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(500); dPrint(punto);  }
     dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected() ? ok : c(terror)); dPrint(crlf);
     dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
 
@@ -2831,7 +2771,7 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
     WiFi.begin(conf.ssidSTA, conf.passSTA, true);
     cont = 0;
     dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-    while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto); }
+    while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(500); dPrint(punto); }
     dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected() ? ok : c(terror)); dPrint(crlf);
     dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
     ////////////////////////////////
@@ -2853,7 +2793,7 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
       WiFi.begin("CONUCO_150", t12341234, true);
       byte cont = 0;
       dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-      while ((!WiFi.isConnected()) && (cont++ < 20))  {delay(1000); dPrint(punto); }
+      while ((!WiFi.isConnected()) && (cont++ < 20))  {delay(500); dPrint(punto); }
       dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected()?ok:c(terror)); dPrint(crlf);
       dPrint(c(tIP)); Serial.print(WiFi.localIP()); dPrint(crlf);
 
@@ -2874,7 +2814,7 @@ void ICACHE_FLASH_ATTR setupdev150HTML()
       WiFi.begin(conf.ssidSTA, conf.passSTA, true);
       cont=0;
       dPrint(t(conectando)); dPrint(b); dPrint(WiFi.SSID()); dPrint(barra); dPrint(WiFi.psk()); dPrint(b);
-      while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto); }
+      while ((!WiFi.isConnected()) && (cont++ < 20))  { delay(500); dPrint(punto); }
       dPrint(crlf); dPrint(t(tconectado)); dPrint(b); dPrint(WiFi.isConnected()?ok:c(terror)); dPrint(crlf);
       dPrint(c(tIP)); (WiFi.localIP()); dPrint(crlf);
       ////////////////////////////////

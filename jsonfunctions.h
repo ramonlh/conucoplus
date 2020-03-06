@@ -51,11 +51,6 @@ void ICACHE_FLASH_ATTR buildJson()
   printP(comillas,letraM,letraJ,comillas);  printP(dp,comillas,conf.idmyjson,comillas,coma);                // MJ IdMyjson
   
   for (byte i=0; i<maxTemp; ++i) buildvalorF(letrat,vacio,vacio,i,(MbR[i]*0.01),2,vacio);  // TEMPERATURAS
-  for (byte i=0; i<maxEA; ++i)    // ENTRADA ANALÓGICA
-    {
-    buildvalorF(letraa,vacio,vacio,i,((MbR[baseAna+1]*conf.factorA[i])+(conf.offsetA[i])),2,vacio);
-    buildvalorC(letrau,letraa,vacio,i,conf.unitpinA[i],vacio);
-    }
   for (byte i=0; i<maxED; ++i) 
     { 
     if (conf.tipoED[i]==0)      // ON/OFF
@@ -117,13 +112,6 @@ void ICACHE_FLASH_ATTR buildjsonext()
     buildvalorC(letran,vacio,vacio,-1,readdescr(filedesclocal,i,20),vacio);
     buildvalorF(letrav,vacio,vacio,-1,MbR[i]*0.01,2,llave_f);
    }
-  for (byte i=0;i<maxEA; ++i)    // ENTRADA ANALÓGICA
-  {
-    buildtipo(letraa,vacio,i);
-    buildvalorI(letras,vacio,vacio,-1,getbit8(conf.bshowbypanel[0], i+3),vacio);
-    buildvalorC(letran,vacio,vacio,-1,readdescr(filedesclocal,i+3,20),vacio);
-    buildvalorF(letrav,vacio,vacio,-1,(MbR[baseAna+i]*conf.factorA[i])+conf.offsetA[i],2,llave_f);
-  }
   for (byte i=0;i<maxED;++i)    // ENTRADAS DIGITALES
   {
     buildtipo(letrae,letral,i);

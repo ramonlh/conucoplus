@@ -1,12 +1,13 @@
+// A partir de esta versión se precisa PCB v4.
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2032    // primera versión ESP32 
+#define versinst 2039    // primera versión ESP32 
 #define debug true
 #define debugwifi false
 
 #include "commontexts.h"              // setupio
 
-#include <IoTtweetESP32.h>            // Localt
+#include <IoTtweetESP32.h>            // Localthttps://twitter.com/home
 #include "defines.h"                  // include
 #include "variables.h"                // include b
 
@@ -60,21 +61,21 @@ WiFiClient espClient;
 PubSubClient PSclient(espClient);
 ModbusMaster MBnode;
 WiFiUDP ntpUDP;
-TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+TFT_eSPI tft=TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 //ResponsiveAnalogRead analog0(4, true);
 //ResponsiveAnalogRead analog1(27, true);
-
 //NTPClient timeClient(ntpUDP, urlNTPserverpool, 3600, 60000);
 NTPClient timeClient(ntpUDP, "europe.pool.ntp.org");
-OneWire owire(owPin);
+OneWire owire(W0);
 DallasTemperature sensors0(&owire);
 
-TFT_eSPI_Button btSD[maxSD];    // botones salidas digitale
-TFT_eSPI_Button btED[maxED];    // botones entradas digitales
-TFT_eSPI_Button btTE[maxTemp];  // botones temperaturas
-TFT_eSPI_Button btGPIO[maxgpiovar];   // botones señales GPIOs
-TFT_eSPI_Button btST[4];        // botones barra estado
-TFT_eSPI_Button btSET[4];       // botones acciones
+TFT_eSPI_Button btSD[maxSD];        // botones salidas digitale
+TFT_eSPI_Button btED[maxED];        // botones entradas digitales
+TFT_eSPI_Button btTE[maxTemp];      // botones temperaturas
+TFT_eSPI_Button btIP[4];            // botones pantalla IP
+TFT_eSPI_Button btGPIO[maxgpiovar]; // botones señales GPIOs
+TFT_eSPI_Button btST[4];            // botones barra estado
+TFT_eSPI_Button btSET[4];           // botones acciones: Reset, Setup,WiFi,xxxx
 TFT_eSPI_Button bt817[maxbt817];    // botones FT817
 
 
@@ -89,13 +90,10 @@ TFT_eSPI_Button bt817[maxbt817];    // botones FT817
 #include "ft817functions.h"            // include
 
 void initSPIFSS(boolean testfiles, boolean format) {
-	if(SPIFFS.begin(format)) { Serial.println("SPIFSS OK"); }
-	else  { Serial.println("SPIFSS ERROR"); }
-
+	if(SPIFFS.begin(format)) { Serial.println("SPIFSS OK"); }	else  { Serial.println("SPIFSS ERROR"); }
 	if(testfiles) {
 		File dir=SPIFFS.open(barra);
 		File file=dir.openNextFile();
-
 		while(file) { Serial.print(file.name()); Serial.print(b); Serial.println(file.size()); file=dir.openNextFile(); }
 	}
 }
@@ -108,17 +106,16 @@ void initDS18B20() {
 	dPrint(t(sondastemp));	dPrint(dp);
 	dPrintI(nTemp);	dPrint(crlf);	dPrint(b);	dPrint(t(Modo));	dPrint(dp);
 	dPrint((sensors0.isParasitePowerMode())?c(tparasite):c(tpower));	dPrint(crlf);
- 
-  for(byte i=0; i<nTemp; i++)       {
-    if(sensors0.getAddress(addr1Wire[i], i))    {
+  for(byte i=0; i<maxTemp; i++)       {   // busca sondas conectadas
+    if (sensors0.getAddress(addr1Wire[i], i))    {
       dPrint(b);
       for(uint8_t j=0; j<8; j++) { if(addr1Wire[i][j]<16) { dPrint(cero); } Serial.print(addr1Wire[i][j], HEX); }
       dPrint(crlf);
-    }
+      }
   }
 }
 
-void initEntDig() { for(byte i=0; i<maxED; i++) { pinMode(edPin[i], INPUT); }  }
+void initEntDig() { for(byte i=0; i<maxED; i++) { pinMode(edPin[i], INPUT_PULLUP); }  }
 
 void initSalDig() {
 	for(byte i=0; i<maxSD; i++) {
@@ -128,24 +125,26 @@ void initSalDig() {
 }
 
 void initbmp085() {
-	if(bmp085.begin()) {bmp085enabled=true; Serial.println(c(BMP085OK));}
-	else { Serial.print(b);  Serial.println(c(BMP085notfound));  }
+  if (conf.I2Cenabled==1)
+    {
+    if(bmp085.begin()) {bmp085enabled=true; Serial.println(c(BMP085OK));}
+    else { Serial.print(b);  Serial.println(c(BMP085notfound));  }
+    }
 }
 
 void initGpios() {
-	Serial.print("gpios:");
-  ////////////////////////////
-  
 	for(byte i=0; i<maxgpiovar; i++) {
 		if(gpiovis(i)) 
 		  {
-			if(conf.gpiosensortype[i]==0) { pinMode(listgpiovar[i], INPUT_PULLUP); }    // input
-			else if(conf.gpiosensortype[i]==1)  { pinMode(listgpiovar[i], OUTPUT); }    // output
-			else if(conf.gpiosensortype[i]==2)  { pinMode(listgpiovar[i], INPUT); }     // ADC
-			else if(conf.gpiosensortype[i]==3)  { pinMode(listgpiovar[i], OUTPUT); }    // DAC
-      else if(conf.gpiosensortype[i]==4)  { pinMode(listgpiovar[i], INPUT);   dht[i].setup(listgpiovar[i], DHTesp::DHT11); }  // DHT
-      else if(conf.gpiosensortype[i]==5)  { pinMode(listgpiovar[i], INPUT); }    // PT1000
-			else { pinMode(listgpiovar[i], OUTPUT); }   // no definido
+      if(conf.gpiosensortype[i]==0)      { pinMode(listgpiovar[i], INPUT_PULLUP); } // input
+			else if(conf.gpiosensortype[i]==1) { pinMode(listgpiovar[i], OUTPUT); digitalWrite(listgpiovar[i],0);}       // output
+			else if(conf.gpiosensortype[i]==2) { pinMode(listgpiovar[i], INPUT); }        // ADC
+			else if(conf.gpiosensortype[i]==3) { pinMode(listgpiovar[i], OUTPUT);  digitalWrite(listgpiovar[i],0);}       // DAC
+      else if(conf.gpiosensortype[i]==4) { pinMode(listgpiovar[i], INPUT); dht[i].setup(listgpiovar[i], DHTesp::DHT11); }  // DHT
+      else if(conf.gpiosensortype[i]==5) { pinMode(listgpiovar[i], INPUT); }        // PT1000
+      else if(conf.gpiosensortype[i]==6) { pinMode(listgpiovar[i], INPUT); }        // NTC
+      else if(conf.gpiosensortype[i]==7) { pinMode(listgpiovar[i], INPUT); }        // ACS712
+			else { pinMode(listgpiovar[i], OUTPUT);  digitalWrite(listgpiovar[i],0); }   // valor defecto
 		  }
 	}
 }
@@ -160,15 +159,8 @@ void initWiFi() {
 
 	WiFi.setAutoConnect(true);
 	WiFi.setAutoReconnect(true);
-	dPrint(t(wifimodet));
-	dPrint(dp);
-	dPrintI(conf.wifimode);
-	dPrint(crlf);
-	dPrint(c(MAC));
-	dPrint(dp);
-	dPrint(WiFi.softAPmacAddress());
-	dPrint(crlf);
-
+	dPrint(t(wifimodet));	dPrint(dp);	dPrintI(conf.wifimode);	dPrint(crlf);
+	dPrint(c(MAC));	dPrint(dp);	dPrint(WiFi.softAPmacAddress());	dPrint(crlf);
 	for(byte i=0; i<6; i++) {
 		WiFi.softAPmacAddress().substring(i*3,i*3+2).toCharArray(conf.EEmac[i], 3);
 		strcat(mac, conf.EEmac[i]);
@@ -177,22 +169,12 @@ void initWiFi() {
 	if((conf.wifimode==1) || (conf.wifimode==2) || (conf.wifimode==12)) { // AP o AP+STA
 		WiFi.channel(conf.canalAP);
 		WiFi.softAP(conf.ssidAP, conf.passAP, conf.canalAP, false);
-		dPrint(t(canal));
-		dPrint(dp);
-		dPrintI(WiFi.channel());
-		dPrint(crlf);
-		dPrint(c(tIP));
-		dPrint(dp);
-		Serial.print(WiFi.softAPIP());
-		dPrint(crlf);
+		dPrint(t(canal));	dPrint(dp);	dPrintI(WiFi.channel());	dPrint(crlf);
+		dPrint(c(tIP));	dPrint(dp);	Serial.print(WiFi.softAPIP());	dPrint(crlf);
 	}
 
 	if((conf.wifimode==0) || (conf.wifimode==2) || (conf.wifimode==12)) { // STA o AP+STA
-		dPrint(t(staticip));
-		dPrint(dp);
-		dPrint(conf.staticIP?t(SI):t(NO));
-		dPrint(coma);
-
+		dPrint(t(staticip)); dPrint(dp);	dPrint(conf.staticIP?t(SI):t(NO)); dPrint(coma);
 		if(conf.staticIP == 1) {
 			WiFi.config(conf.EEip, conf.EEgw, conf.EEmask, conf.EEdns, conf.EEdns2);
 		}
@@ -205,81 +187,53 @@ void initWiFi() {
 		if(debugwifi) { Serial.setDebugOutput(true); }
 
 		byte cont = 0;
-		dPrint(t(conectando));
-		dPrint(b);
-		dPrint(conf.ssidSTA);
-		dPrint(barra);
-		dPrint(conf.passSTA);
-		dPrint(b);
+		dPrint(t(conectando));		dPrint(b);
+		dPrint(conf.ssidSTA);		dPrint(barra);
+		dPrint(conf.passSTA);		dPrint(b);
 
-		while((!WiFi.isConnected()) && (cont++ < 20))  { delay(1000); dPrint(punto); }
+		while((!WiFi.isConnected()) && (cont++ < 20))  { delay(500); dPrint(punto); }
 
 		dPrint(crlf);
-		dPrint(t(tconectado));
-		dPrint(b);
-		dPrint(WiFi.isConnected()?ok:c(terror));
-		dPrint(crlf);
-		dPrint(c(tIP));
-		dPrint(dp);
-		Serial.print(WiFi.localIP());
-		dPrint(crlf);
-		dPrint(c(tport));
-		dPrint(dp);
-		Serial.print(conf.webPort);
-		dPrint(crlf);
-		Serial.print("ESP Mac Address: ");
-		Serial.println(WiFi.macAddress());
-		Serial.print("Subnet Mask: ");
-		Serial.println(WiFi.subnetMask());
-		Serial.print("Gateway IP: ");
-		Serial.println(WiFi.gatewayIP());
-		Serial.print("DNS: ");
-		Serial.println(WiFi.dnsIP());
+		dPrint(t(tconectado));	dPrint(b);	dPrint(WiFi.isConnected()?ok:c(terror));	dPrint(crlf);
+		dPrint(c(tIP));	dPrint(dp);	Serial.print(WiFi.localIP());	dPrint(crlf);
+		dPrint(c(tport));	dPrint(dp);	Serial.print(conf.webPort);	dPrint(crlf);
+		Serial.print("ESP Mac Address: ");	Serial.println(WiFi.macAddress());
+		Serial.print("Subnet Mask: ");	Serial.println(WiFi.subnetMask());
+		Serial.print("Gateway IP: ");	Serial.println(WiFi.gatewayIP());
+		Serial.print("DNS: ");	Serial.println(WiFi.dnsIP());
 	}
 }
 
 void initTime() {
 	///// Time
 	timeClient.begin();
-
 	if(WiFi.isConnected()) {
 		timeClient.setTimeOffset(3600);
-
 		if(timeClient.update()==1)
 		{countfaulttime=0; setTime(timeClient.getEpochTime()); }
 		else {
-			Serial.print("timeclient.update:");
-			Serial.println(timeClient.update());
+			Serial.print("timeclient.update:");		Serial.println(timeClient.update());
 		}
 	}
 }
 
-void initFTP() {
-	ftpSrv.begin(admin,admin);    //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
-}
-
-void initSerial() {
-	Serial.begin(115200);
-}
-
-void asignPins() {
-	// reasignación de GPIOs según leído en fichero conf
-//  for (byte i=0;i<maxED;i++) { edPin[i]=conf.ngpio[i+10]; }
-//  for (byte i=0;i<maxSD;i++) { sdPin[i]=conf.ngpio[i+14]; }
-
-}
-
-void initWebserver() { server.begin();  Serial.println("HTTP server started"); }
-void initPubSub() { PSclient.setServer(conf.mqttserver, 1883); PSclient.setCallback(mqttcallback); }
+void initFTP() {ftpSrv.begin(admin,admin);  }  //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
+void initSerial()   
+  {	Serial.begin(115200); }
+void initWebserver() 
+  { server.begin();  Serial.println("HTTP server started"); }
+void initPubSub() 
+  { PSclient.setServer(conf.mqttserver, 1883); PSclient.setCallback(mqttcallback); }
 
 void init433() {
-//	if(conf.RX433enabled==1) {
-	//	pinMode(RX433,INPUT_PULLUP);
+	if(conf.RX433enabled==1) {
+		pinMode(RX433,INPUT_PULLUP);
 		//mySwitch.enableReceive(RX433);  // Receiver on interrupt 32 => that is pin #32,
-	//}
+	  }
 }
 
-void initLCD() {	if(conf.I2Cenabled==1) { lcd.init();  lcd.backlight(); lcdshowstatus(); } }
+void initLCD() 
+  {	if(conf.I2Cenabled==1) { lcd.init();  lcd.backlight(); lcdshowstatus(); } }
 
 void leerConf() { 
 	if(readconf()<sizeof(conf)) { saveconf(); }
@@ -317,39 +271,39 @@ void ICACHE_FLASH_ATTR setup(void) {
 	if (conf.mqttenabled) initPubSub();
 	initIFTTT();
 
-	Serial.println();
-	Serial.print("vers. ");	Serial.println(versinst);
+	Serial.println();	Serial.print("vers. ");	Serial.println(versinst);
 	checkMyIP();
-	dPrint(t(ippublica));
-	dPrint(dp);
-	dPrint(conf.myippub);
-	dPrint(crlf);
-	initLCD();
+	dPrint(t(ippublica));	dPrint(dp);	dPrint(conf.myippub);	dPrint(crlf);
+  initLCD();
 
   if (conf.TFTenabled)   
     { 
     tft.fillScreen(TFT_BLACK);
     drawIP(); 
     delay(1000);
-    tft.fillScreen(TFT_BLACK);   
-    }
-  if (conf.modobc==0)
+    tft.fillScreen(TFT_BLACK);    
+    } 
+  if (conf.modofi==0)
     {
     //  initbmp085();
     //  init433();
     //  thermistor = new NTC_Thermistor(SENSOR_PIN,REFERENCE_RESISTANCE,NOMINAL_RESISTANCE,NOMINAL_TEMPERATURE,B_VALUE);
     }
-  else if (conf.modobc==1)
+  else if (conf.modofi==1)
     {
     //  initbmp085();
     //  init433();
     //  thermistor = new NTC_Thermistor(SENSOR_PIN,REFERENCE_RESISTANCE,NOMINAL_RESISTANCE,NOMINAL_TEMPERATURE,B_VALUE);
     }
-	else if(conf.modobc==2) 
+	else if(conf.modofi==2) 
 	  { 
 	    initFT817();       // FT817
 	  }
+}
 
+void setidTFT()
+{
+  
 }
 
 void handletfttouch()
@@ -357,22 +311,26 @@ void handletfttouch()
   uint16_t x, y;
   if (tft.getTouch(&x, &y))
     {
+     // Serial.print("x,y:"); Serial.print(x); Serial.print(","); Serial.println(y);
 //    if (!tfton) 
 //      { 
 //      clearTFT(); 
 //      lasttouch=millis(); return; }
     Serial.print(x); Serial.print("-"); Serial.print(y);
     if (tft.getRotation()==3) { x=tft.width()-x; y=tft.height()-y;}
-    if (conf.modobc==0)
+    if ((conf.modofi==0) || (conf.modofi==1))
       {
-      for (byte i=0;i<maxtftpages;i++)    // cambio de página
+      if (tftpage<7)
         {
-        if (btST[i].contains(x,y))  // botones página atrás/adelante
+        for (byte i=0;i<maxtftpages;i++)    // botones página atrás/adelante, en cualquier página
           {
-          if (i==0) if (tftpage>0) { tftpage--; } else { tftpage=maxtftpages; }
-          if (i==3) if (tftpage<maxtftpages) { tftpage++; } else { tftpage=0; }
-          tft.fillScreen(TFT_BLACK); 
-          drawTFT(); 
+          if (btST[i].contains(x,y))  
+            {
+            if (i==0) if (tftpage>0) { tftpage--; } else { tftpage=maxtftpages; }
+            if (i==3) if (tftpage<maxtftpages) { tftpage++; } else { tftpage=0; }
+            tft.fillScreen(TFT_BLACK); 
+            drawTFT(); 
+            }
           }
         }
       if (tftpage==0)
@@ -380,34 +338,72 @@ void handletfttouch()
         for (byte i=0;i<maxSD;i++)  // botones salidas digitales 
           {
           if (btSD[i].contains(x,y)) 
-            {
-            if ((i>=0) && (i<=maxSD)) { pinVAL(i, getbit8(conf.MbC8,i)==0?1:0,conf.iddevice); }
-            drawTFT(); 
-            }
+            { if ((i>=0) && (i<=maxSD)) { pinVAL(i, getbit8(conf.MbC8,i)==0?1:0,conf.iddevice); } drawTFT(); }
           }
         }
       else if (tftpage==1)
         {
         for (byte i=0;i<maxED;i++)  // botones entradas digitales 
+          { if (btED[i].contains(x,y)) { resetcontador(i); drawTFT();  } }
+        }
+      else if (tftpage==3)         // página GPIOs
+        {
+        for (byte i=0;i<maxgpiovar;i++)  
           {
-          if (btED[i].contains(x,y)) 
+          if (gpiovis(i))
             {
-            resetcontador(i);
-            drawTFT(); 
+            if (btGPIO[i].contains(x,y))   
+              {
+              if (conf.gpiosensortype[i]==0) { resetcontador(i+10); drawTFT(); }  // GPIO como Input
+              else if (conf.gpiosensortype[i]==1) 
+                { if ((i>=0) && (i<maxgpiovar)) 
+                  { 
+                    Serial.println("pinval(");Serial.print(i+10);
+                    Serial.print(","); Serial.print(getbit8(conf.MbC8gpio,i)==0?1:0);
+                    Serial.print(","); Serial.println(conf.iddevice);
+                    pinVAL(i+10, getbit8(conf.MbC8gpio,i)==0?1:0,conf.iddevice);  }               }
+              drawTFT(); 
+              }
+            }
+          }
+        }
+      else if (tftpage==4)
+        {
+        for (byte i=0;i<4;i++)  // botones IP: SCAN, ...
+          { 
+          if (btIP[i].contains(x,y))  
+            { 
+            if (i==0) { setidTFT(); }
+            else if (i==1) { selectapTFT();}  
             }
           }
         }
       else if (tftpage==5)
         {
         for (byte i=0;i<4;i++)  // botones comandos
-          { if (btSET[i].contains(x,y))  { if (i==0) { ESP.restart(); }; }  }
+          { 
+          if (btSET[i].contains(x,y))  
+            { 
+            if (i==0) { ESP.restart(); }
+            }  
+          }
+        }
+      else if (tftpage==7)
+        {
+        for (byte i=0;i<4;i++)  // botones comandos
+          { 
+          if (btST[i].contains(x,y))  
+            { 
+            if (i==0) { tftapactual--; if (tftapactual<0) tftapactual=nAP-1; drawAP(tftapactual);}
+            else if (i==1) { tftpage=4; }
+            else if (i==2) { WiFi.SSID(tftapactual).toCharArray(conf.ssidSTA, 20); saveconf(); tftpage=5; }
+            else if (i==3) { tftapactual++; if (tftapactual>nAP-1) tftapactual=0; drawAP(tftapactual);}
+            }  
+          }
         }
       }
-    else if (conf.modobc==1)    // bomba de calor
-      {
-        
-      }
-    else if (conf.modobc==2)    // FT817
+    else if (conf.modofi==1)   {    }  // bomba de calor    
+    else if (conf.modofi==2)    // FT817
       {
       for (byte i=0;i<maxbt817;i++)  // botones FT817
         {
@@ -420,10 +416,8 @@ void handletfttouch()
         }
       }
     Serial.println();
-    }
+    } 
 }
-
-
 
 void testChange() {
 	if(statusChange) {
@@ -531,26 +525,31 @@ void task1() {
 	countfaulttime++;   // si se hace mayor que TempDesactPrg,desactiva ejecucion programas dependientes de fecha
 	leevaloresDIG();
   leevaloresGPIO();
-	procesaeventos();
-	procesaTimeMax();
+//	procesaeventos();
+	// procesaTimeMax();
 
-	if(conf.modobc==0) 
+	if(conf.modofi==0)    // normal
 	  {
 		for(byte j=0; j<maxsalrem; j++)
 			if(conf.idsalremote[j]>0)
 				if((conf.senalrem[j]==6) || (conf.senalrem[j]==7)) { contaremote[j]++; }
-    drawTFT();
+    if (tftpage<7) drawTFT();
 	  } 
-	else if(conf.modobc==1)  { procesaBC(); }
-	else if(conf.modobc==2)  { procesaTF(); }
+	else if(conf.modofi==1)  // bomba calor
+	  {
+	  procesaBC(); 
+    if (tftpage<7) drawTFT();
+	  }
+	else if(conf.modofi==2)  // radio
+	  { 
+	  procesaTF(); 
+    if (tftpage<7) drawTFT();
+	  }
 
 	testChange();
 	tfton=(millis()-lasttouch)<60000;
- 
 //  if (!tfton) { tft.fillScreen(TFT_BLACK); }
-
 	if(conf.rstper>0) {	if(millis() > 3600000*conf.rstper) { Serial.println("RESTART");	ESP.restart();	}	}
-
 	mact1=millis();
 	}
 
@@ -613,6 +612,14 @@ void handleFTP()  { if(conf.ftpenable) { ftpSrv.handleFTP(); } }
 void handleWebclient()  { server.handleClient(); }
 void handlePubSub()  {  if (conf.mqttenabled) PSclient.loop(); }
 
+void tictacxxx(byte pin, int dur)
+  {
+  Serial.print(pin); Serial.print(":");  
+  digitalWrite(pin,0); delay(dur/2);  Serial.print(digitalRead(pin));
+  digitalWrite(pin,1); delay(2*dur); Serial.print(digitalRead(pin));  
+  digitalWrite(pin,0); delay(dur/2);Serial.println(digitalRead(pin));
+  }
+
 void loop(void) {
 	tini=millis();
   handleSerial();
@@ -621,7 +628,7 @@ void loop(void) {
   handlePubSub();
 	leevaloresDIG();
 	handletfttouch();
-	handleRF();
+	//handleRF();
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if((millis() > (mact1 + 1000))) { task1(); }                      // tareas que se hacen cada segundo
