@@ -1,11 +1,12 @@
 boolean ICACHE_FLASH_ATTR clientremote(){
-  return ((server.remoteIP[0]!=192) && (server.remoteIP[0]!=0)); }
+//  return ((server.remoteIP[0]!=192) && (server.remoteIP[0]!=0)); }
+  return false; }
 
 void ICACHE_FLASH_ATTR printremote() {
   if (!clientremote()) return;
   printhora(); Serial.print(b);
-  for (byte i=0;i<3;i++) {Serial.print(server.remoteIP[i]);Serial.print(punto);}
-  Serial.println(server.remoteIP[3]);
+  //for (byte i=0;i<3;i++) {Serial.print(server.remoteIP[i]);Serial.print(punto);}
+  //Serial.println(server.remoteIP[3]);
   }
 
 void ICACHE_FLASH_ATTR filesHTML()

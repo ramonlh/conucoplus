@@ -1,27 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////  COMUNES   //////////////////////////////////////////////////////////
-    
-PGM_P(htmlHead_3)=  
-    "<meta name=\"viewport\" content=\"width=device-width initial-scale=1\"/>"
-//    "<meta http-equiv=\"Content-Type\" content=\"text/html charset=utf-8\"/>"
-    "<meta http-equiv=\"Content-Type\" content=\"text/html charset=ISO-8859-1\"/>"
-    
-    "<style type=\"text/css\"> a:link { text-decoration:none; }"    // quita subrayado de enlaces
-    
-    "table.m {font-family:Verdana;font-size:11pt;border-collapse:collapse;}"     
-    "table.m th {border-width:2px;padding:8px;border-style:solid;border-color:#666666;background-color:#FDFF9A;}"
-    "table.m td {border-width:2px;padding:8px;border-style:solid;border-color:#666666;background-color:#dedede;}"
-
-    // usado en tablas de panel principal
-    "table.p {font-family:Verdana;font-size:9pt;border-collapse:collapse;color:#FFFFFF;text-align:left;}"      
-    "table.p th {border-color:#666666;border-width:2px;padding:8px;border-style:solid;background-color:#FFFF00;}"
-    "table.p td {border-color:#666666;border-width:2px;padding:8px; border-style:solid;font-color:#000000;background-color:#515772;}"
-
-    // usado en tablas de configuración, programación etc NO CENTRADO
-    "table.n {font-family:Verdana;font-size:9pt;border-collapse:collapse;text-align:left;}"      
-    "table.n th {border-style:solid;border-color:#666666;border-width:2px;padding:4px;background-color:#FFFF00;}"
-    "table.n td {border-style:solid;border-color:#666666;border-width:2px;padding:4px;background-color:#DEDEDE;}"
-    "</style>";
 
 // textos html NO MODIFICAR
 
@@ -59,7 +37,6 @@ PGM_P(sshtm)="ss";
 PGM_P(srlhtm)="srl";
 PGM_P(slkhtm)="sr";
 PGM_P(sremhtm)="ssr";
-PGM_P(sbhtm)="sb";
 PGM_P(sdhtm)="sd";
 PGM_P(sphtm)="sp";
 PGM_P(sbphtm)="sbp";
@@ -83,7 +60,6 @@ PGM_P(loghtm)="l";
 PGM_P(scanap)="sc"; 
 PGM_P(svhtm)="sv";
 PGM_P(siohtm)="sio";
-PGM_P(siphtm)="sip";
 PGM_P(termhtm)="t";
 PGM_P(Off)="Off";
 PGM_P(off)="of";
@@ -101,18 +77,14 @@ PGM_P(barrarjc)="/rjc";
 PGM_P(igualp)="?p=";
 
 PGM_P(letraa)="a";
-PGM_P(letraA)="A";
 PGM_P(letrab)="b";
-PGM_P(letraB)="B";
 PGM_P(letrac)="c";
-PGM_P(letraC)="C";
 PGM_P(letrad)="d";
 PGM_P(letraD)="D";
 PGM_P(letrae)="e";
 PGM_P(letraf)="f";
 PGM_P(letrag)="g";
 PGM_P(letrah)="h";
-PGM_P(letraH)="H";
 PGM_P(letrai)="i";
 PGM_P(letraJ)="J";
 PGM_P(letral)="l";
@@ -129,7 +101,6 @@ PGM_P(letraR)="R";
 PGM_P(letras)="s";
 PGM_P(letraS)="S";
 PGM_P(letrat)="t";
-PGM_P(letraT)="T";
 PGM_P(letrau)="u";
 PGM_P(letrav)="v";
 PGM_P(letraV)="V";
@@ -175,6 +146,7 @@ PGM_P(amas)="a+";
 PGM_P(rmas)="r+";
 PGM_P(wmas)="w+";
 PGM_P(grados)="ºC";
+PGM_P(mbar)="mb";
 PGM_P(celsius)="&#8451;";
 PGM_P(symsum)="&#8721;";
 PGM_P(symhoz)="&#9773;";
@@ -218,8 +190,6 @@ PGM_P(OFFON)="OFF/ON";
 PGM_P(selected)="selected";
 PGM_P(checked)="checked";
 PGM_P(tvalue)="value";
-PGM_P(tguardar)="Guardar";
-PGM_P(tejecutar)="Ejecutar";
 PGM_P(dataType)="dataType";
 PGM_P(ultimovalor)="Last value";
 PGM_P(intro)="INTRO";
@@ -228,8 +198,8 @@ PGM_P(ups)="PgUp";
 PGM_P(downs)="PgDn";
 PGM_P(lefts)="LF";
 PGM_P(rigths)="RT";
-PGM_P(tconuco)="conuco 8266";
-PGM_P(tconuco32)="conuco 32";
+PGM_P(apppublish)="app.publish";
+PGM_P(tsetpoint)="SP";
 
 ///////////////////////////////
 
@@ -237,10 +207,6 @@ PGM_P(tconuco32)="conuco 32";
 PGM_P(aa)="aa";
 PGM_P(DV)="DV";
 PGM_P(ua0)="ua0";
-//PGM_P(el0)="e0";
-//PGM_P(el1)="e1";
-//PGM_P(sl0)="s0";
-//PGM_P(sl1)="s1";
 PGM_P(tel0)="te0";
 PGM_P(tel1)="te1";
 PGM_P(tsl0)="ts0";

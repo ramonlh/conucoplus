@@ -1,7 +1,7 @@
 
 
 #define INITFAB false    // si true, se resetea a fábrica, si false no se hace nada
-#define versinst 2009    // 
+#define versinst 2010    // 
 #define debug true
 #define debugwifi false
 
@@ -18,7 +18,7 @@ extern "C" {
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>                // Local
 #include <ESP8266HTTPClient.h>        // Local
-#include <ESP8266WebServer.h>         // Locals
+#include <ESP8266WebServer.h>         // Local
 #include <ESP8266HTTPUpdateServer.h>  // Local
 #include <ESP8266httpUpdate.h>        // Local
 #include "ESP8266WiFiAP.h"            // Local
@@ -38,9 +38,7 @@ extern "C" {
 #include <ESP8266FtpServer.h>
 #include <PubSubClient.h>
 #include "variables.h"                // include
-//#include "uMQTTBroker.h"
 
-//uMQTTBroker myBroker(1883,1,0);
 ADC_MODE(ADC_TOUT);
 ESP8266WebServer server(88);
 OneWire owire(owPin);
@@ -53,12 +51,12 @@ Adafruit_BMP085 bmp085;
 RCSwitch mySwitch = RCSwitch();
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Display LCD 2x16 azul
 DHTesp dht[2];
-FtpServer ftpSrv;   //set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
+FtpServer ftpSrv;   
 WiFiClient espClient;
 PubSubClient PSclient(espClient);
 IoTtweet myiot;
 
-#include "basicfunctions.h"            // include
+#include "basicfunctions.h"            /// include
 //#include "ajaxcode.h"                  // include
 #include "htmlFunctions.h"             // include
 #include "conuco8266.h"               // include
@@ -96,13 +94,8 @@ void initPines()
   }
 }
 
-void initSerial() {
-  Serial.begin (115200);
-  delay(10);
-}
-void initEEPROM() {
-  EEPROM.begin(ROMsize);
-}
+void initSerial() { Serial.begin (115200); delay(10); }
+void initEEPROM() { EEPROM.begin(ROMsize); }
 
 void initSPIFFS()
 {
@@ -113,9 +106,9 @@ void initSPIFFS()
     return;
   }
 }
-void initFTP() {
-  ftpSrv.begin(conf.userDev, conf.passDev);
-}
+
+void initFTP() { ftpSrv.begin(conf.userDev, conf.passDev); }
+
 void initDS18B20()
 {
   sensors1.begin();
@@ -678,5 +671,3 @@ void ICACHE_FLASH_ATTR loop(void)
     mact86400 = millis();
     }
 }
-
-
